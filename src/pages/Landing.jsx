@@ -5,6 +5,15 @@ import { ShoppingBag, Truck, ArrowRight } from "lucide-react";
 export default function Landing() {
   const navigate = useNavigate();
 
+  // Function updated to navigate to the specific role-based login pages
+  const handleEntry = (role) => {
+    if (role === "vendor") {
+      navigate("/vendor/login");
+    } else {
+      navigate("/buyer/login");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center px-4 relative overflow-hidden font-sans">
       
@@ -40,7 +49,7 @@ export default function Landing() {
           
           {/* Buyer Entry */}
           <button
-            onClick={() => navigate("/market")}
+            onClick={() => handleEntry("buyer")}
             className="group relative p-8 bg-white border border-slate-200 rounded-3xl shadow-sm hover:shadow-2xl hover:border-blue-500 hover:-translate-y-1 transition-all duration-300 text-left"
           >
             <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 rotate-3 group-hover:rotate-0">
@@ -57,7 +66,7 @@ export default function Landing() {
 
           {/* Vendor Entry */}
           <button
-            onClick={() => navigate("/vendor/dashboard")}
+            onClick={() => handleEntry("vendor")}
             className="group relative p-8 bg-white border border-slate-200 rounded-3xl shadow-sm hover:shadow-2xl hover:border-emerald-500 hover:-translate-y-1 transition-all duration-300 text-left"
           >
             <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300 -rotate-3 group-hover:rotate-0">

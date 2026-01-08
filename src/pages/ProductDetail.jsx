@@ -1,59 +1,74 @@
 import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
 import { 
-  ArrowLeft, 
-  ShieldCheck, 
-  Globe, 
-  Clock, 
-  FileText, 
-  MessageSquare,
-  Truck,
-  CheckCircle,
-  Package
+  ArrowLeft, ShieldCheck, Globe, Clock, FileText, 
+  MessageSquare, Truck, CheckCircle, Package, Loader2 
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 export default function ProductDetail() {
+  const { id } = useParams(); 
   const navigate = useNavigate();
-
-  // Integrated Mock Data
-  const product = {
-    name: "Premium Cotton Fabric",
-    category: "Textiles",
-    unit: "meter",
-    moq: 500,
-    leadTime: "15-20 days",
-    location: "Vietnam",
-    vendor: "Global Tex Co.",
-    rating: 4.8,
-    description: "High-grade 100% organic cotton fabric suitable for industrial garment production. Double-combed for extra softness and durability. Breathable, hypoallergenic, and ethically sourced.",
-    tiers: [
-      { minQty: 500, price: 8.50, label: "Starter" },
-      { minQty: 2000, price: 7.25, label: "Business" },
-      { minQty: 5000, price: 6.10, label: "Enterprise" },
-    ]
-  };
-
-  // State for Calculator
-  const [quantity, setQuantity] = useState(product.moq);
+  
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [quantity, setQuantity] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
-  const [currentUnitPrice, setCurrentUnitPrice] = useState(product.tiers[0].price);
+  const [currentUnitPrice, setCurrentUnitPrice] = useState(0);
 
-  // Logic to update price based on quantity
+  // 1. Fetch Dynamic Product Data from Backend
   useEffect(() => {
-    const applicableTier = [...product.tiers]
-      .reverse()
-      .find(tier => quantity >= tier.minQty) || product.tiers[0];
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get(`http://localhost:5000/api/products/${id}`);
+        setProduct(res.data);
+        // Initialize quantity with the Minimum Order Quantity (MOQ)
+        setQuantity(res.data.moq || 1);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching product:", err);
+        setLoading(false);
+      }
+    };
+    if (id) fetchProduct();
+  }, [id]);
 
-    setCurrentUnitPrice(applicableTier.price);
-    setTotalPrice(quantity * applicableTier.price);
-  }, [quantity]);
+  // 2. Dynamic Price Calculation Logic
+  useEffect(() => {
+    if (product && product.tiers && product.tiers.length > 0) {
+      // Find the best price tier based on current quantity
+      const applicableTier = [...product.tiers]
+        .reverse()
+        .find(tier => quantity >= tier.minQty) || product.tiers[0];
+
+      setCurrentUnitPrice(applicableTier.price);
+      setTotalPrice(quantity * applicableTier.price);
+    }
+  }, [quantity, product]);
+
+  if (loading) return (
+    <div className="flex h-screen items-center justify-center bg-slate-50">
+      <div className="text-center">
+        <Loader2 className="animate-spin text-blue-600 mx-auto mb-4" size={40} />
+        <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Accessing TradeFlow Database...</p>
+      </div>
+    </div>
+  );
+
+  if (!product) return (
+    <div className="p-20 text-center">
+       <h2 className="text-2xl font-bold text-slate-800">Product Not Found</h2>
+       <button onClick={() => navigate("/market")} className="mt-4 text-blue-600 underline">Return to Marketplace</button>
+    </div>
+  );
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6 p-4 md:p-8">
       {/* Navigation */}
       <button 
-        onClick={() => navigate(-1)}
-        className="flex items-center text-slate-500 hover:text-blue-600 transition text-sm font-medium group"
+        onClick={() => navigate("/market")}
+        className="flex items-center text-slate-500 hover:text-blue-600 transition text-sm font-bold uppercase tracking-widest group"
       >
         <ArrowLeft size={16} className="mr-2 group-hover:-translate-x-1 transition-transform" /> 
         Back to Marketplace
@@ -63,42 +78,46 @@ export default function ProductDetail() {
         
         {/* Left Column: Media & Specifications */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+          <div className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden shadow-sm">
             <div className="aspect-video bg-slate-100 flex items-center justify-center">
-               <span className="text-slate-400 font-bold text-2xl">Product Image Gallery</span>
+               <img 
+                 src={product.images?.[0] || "https://via.placeholder.com/800x450?text=Product+Image"} 
+                 className="w-full h-full object-cover"
+                 alt={product.name}
+               />
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 p-8">
-            <h1 className="text-3xl font-extrabold text-slate-900 mb-2">{product.name}</h1>
+          <div className="bg-white rounded-[2.5rem] border border-slate-200 p-8 shadow-sm">
+            <h1 className="text-4xl font-black text-slate-900 mb-2 tracking-tighter uppercase">{product.name}</h1>
             <div className="flex items-center gap-4 mb-8">
-              <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-bold uppercase tracking-wide">
+              <span className="px-3 py-1 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest">
                 {product.category}
               </span>
-              <div className="flex items-center text-slate-500 text-sm">
-                <Globe size={14} className="mr-1" /> Origin: {product.location}
+              <div className="flex items-center text-slate-400 text-xs font-bold uppercase tracking-widest">
+                <Globe size={14} className="mr-1 text-blue-600" /> Origin: {product.location || "Global"}
               </div>
             </div>
 
             <div className="border-t border-slate-100 pt-8">
-              <h3 className="font-bold text-slate-900 mb-4 text-lg">Specifications</h3>
-              <p className="text-slate-600 leading-relaxed mb-8">
+              <h3 className="font-black text-slate-900 mb-4 text-sm uppercase tracking-widest">Specifications & Description</h3>
+              <p className="text-slate-600 leading-relaxed mb-8 font-medium">
                 {product.description}
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl">
-                  <div className="p-2 bg-white rounded-lg shadow-sm text-blue-600"><Clock size={20} /></div>
+                <div className="flex items-start gap-4 p-5 bg-slate-50 rounded-[1.5rem] border border-slate-100">
+                  <div className="p-3 bg-white rounded-xl shadow-sm text-blue-600"><Clock size={20} /></div>
                   <div>
-                    <p className="text-xs text-slate-400 font-bold uppercase">Manufacturing Lead Time</p>
-                    <p className="text-sm font-bold text-slate-700">{product.leadTime}</p>
+                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Manufacturing Lead Time</p>
+                    <p className="text-sm font-black text-slate-700">{product.leadTime || "Standard (15-20 days)"}</p>
                   </div>
                 </div>
-                <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl">
-                  <div className="p-2 bg-white rounded-lg shadow-sm text-emerald-600"><ShieldCheck size={20} /></div>
+                <div className="flex items-start gap-4 p-5 bg-slate-50 rounded-[1.5rem] border border-slate-100">
+                  <div className="p-3 bg-white rounded-xl shadow-sm text-emerald-600"><ShieldCheck size={20} /></div>
                   <div>
-                    <p className="text-xs text-slate-400 font-bold uppercase">Quality Standard</p>
-                    <p className="text-sm font-bold text-slate-700">ISO 9001:2015 Certified</p>
+                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Quality Standard</p>
+                    <p className="text-sm font-black text-slate-700">Verified & ISO Certified</p>
                   </div>
                 </div>
               </div>
@@ -108,82 +127,83 @@ export default function ProductDetail() {
 
         {/* Right Column: Order Calculator & Purchase */}
         <div className="space-y-6">
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm sticky top-6">
-            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-6">Order Calculator</h3>
+          <div className="bg-white rounded-[2.5rem] border border-slate-200 p-8 shadow-xl shadow-slate-200/50 sticky top-24">
+            <h3 className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] mb-8 text-center">Order Calculator</h3>
             
             {/* Quantity Input */}
             <div className="mb-6">
-              <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Enter Quantity ({product.unit}s)</label>
+              <label className="block text-[10px] font-black text-slate-400 mb-3 uppercase tracking-widest">Enter Quantity ({product.unit}s)</label>
               <div className="relative">
                 <input 
                   type="number" 
                   min={product.moq}
                   value={quantity}
                   onChange={(e) => setQuantity(Math.max(0, Number(e.target.value)))}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-lg font-bold focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                  className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-xl font-black focus:border-blue-600 outline-none transition-all"
                 />
-                <Package className="absolute right-4 top-3.5 text-slate-300" size={20} />
+                <Package className="absolute right-5 top-4.5 text-slate-300" size={24} />
               </div>
               {quantity < product.moq && (
-                <p className="text-red-500 text-[10px] mt-1 font-bold">Minimum order: {product.moq} {product.unit}s</p>
+                <p className="text-red-500 text-[10px] mt-2 font-black uppercase tracking-tighter italic">Minimum order: {product.moq} {product.unit}s</p>
               )}
             </div>
 
             {/* Total Price Display */}
-            <div className="bg-slate-900 rounded-2xl p-5 mb-6 text-white shadow-xl shadow-slate-200">
-              <div className="flex justify-between items-center mb-2 text-slate-400 text-xs font-bold uppercase tracking-wider">
-                <span>Unit Price</span>
-                <span className="text-white">${currentUnitPrice.toFixed(2)}</span>
+            <div className="bg-slate-900 rounded-[2rem] p-6 mb-8 text-white shadow-xl">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Current Unit Price</span>
+                <span className="text-lg font-black text-white">${currentUnitPrice.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between items-center border-t border-slate-700 pt-4">
-                <span className="text-sm font-medium text-slate-300">Total Est.</span>
-                <span className="text-2xl font-black text-blue-400">
+              <div className="h-px bg-white/10 mb-4"></div>
+              <div className="flex justify-between items-end">
+                <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Total Est.</span>
+                <span className="text-3xl font-black text-blue-400 tracking-tighter">
                   ${totalPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </span>
               </div>
             </div>
 
-            {/* Tier Highlights */}
+            {/* Tier Highlights (Restored from Original) */}
             <div className="space-y-2 mb-8">
-               <p className="text-[10px] font-bold text-slate-400 uppercase mb-3">Available Volume Discounts</p>
-               {product.tiers.map((tier, index) => {
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Available Volume Discounts</p>
+               {product.tiers && product.tiers.map((tier, index) => {
                  const isActive = quantity >= tier.minQty && (index === product.tiers.length - 1 || quantity < product.tiers[index + 1].minQty);
                  return (
-                   <div key={index} className={`flex justify-between items-center text-xs p-3 rounded-xl border transition-all ${isActive ? 'bg-blue-50 border-blue-200 text-blue-700 ring-1 ring-blue-200 shadow-sm' : 'border-slate-50 text-slate-500'}`}>
+                   <div key={index} className={`flex justify-between items-center text-xs p-3 rounded-xl border transition-all ${isActive ? 'bg-blue-50 border-blue-600 text-blue-700 ring-1 ring-blue-600 shadow-sm' : 'border-slate-50 text-slate-500'}`}>
                      <div className="flex flex-col">
-                        <span className="font-black">{tier.label}</span>
-                        <span>{tier.minQty}+ {product.unit}s</span>
+                        <span className="font-black uppercase tracking-tighter">{tier.label || `Tier ${index + 1}`}</span>
+                        <span className="font-bold">{tier.minQty}+ {product.unit}s</span>
                      </div>
-                     <span className="text-sm font-bold">${tier.price.toFixed(2)}</span>
+                     <span className="text-sm font-black">${tier.price.toFixed(2)}</span>
                    </div>
                  )
                })}
             </div>
 
-            {/* Action Buttons */}
+            {/* Action Buttons (Restored from Original) */}
             <div className="flex flex-col gap-3">
               <button 
                 disabled={quantity < product.moq}
-                className="w-full bg-blue-600 disabled:bg-slate-200 disabled:cursor-not-allowed text-white py-4 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-100 flex items-center justify-center gap-2"
+                className="w-full bg-blue-600 disabled:bg-slate-100 disabled:text-slate-400 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-700 transition shadow-lg shadow-blue-200 flex items-center justify-center gap-2 active:scale-95"
               >
-                Start Purchase Order <CheckCircle size={18} />
+                Start Purchase Order <CheckCircle size={20} />
               </button>
-              <button className="w-full bg-white border border-slate-200 text-slate-700 py-4 rounded-xl font-bold hover:bg-slate-50 transition flex items-center justify-center gap-2">
-                Request a Quote <FileText size={18} />
+              <button className="w-full bg-white border-2 border-slate-100 text-slate-900 py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-slate-50 transition flex items-center justify-center gap-2">
+                Request a Quote <FileText size={20} />
               </button>
-              <button className="w-full text-slate-500 py-2 rounded-xl font-bold hover:text-blue-600 transition text-sm flex items-center justify-center gap-2">
-                <MessageSquare size={16} /> Contact Vendor
+              <button className="w-full text-slate-500 py-2 rounded-xl font-black hover:text-blue-600 transition text-[10px] uppercase tracking-widest flex items-center justify-center gap-2">
+                <MessageSquare size={16} /> Contact Vendor: {product.vendor || 'Authorized Supplier'}
               </button>
             </div>
 
-            {/* Trust Footer */}
+            {/* Trust Footer (Restored from Original) */}
             <div className="mt-6 pt-6 border-t border-slate-100 space-y-3">
-              <div className="flex items-center gap-3 text-[11px] text-slate-500">
-                <Truck size={14} className="text-blue-500" />
+              <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                <Truck size={16} className="text-blue-500" />
                 <span>Shipping from <strong>{product.location}</strong></span>
               </div>
-              <div className="flex items-center gap-3 text-[11px] text-slate-500">
-                <ShieldCheck size={14} className="text-emerald-500" />
+              <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                <ShieldCheck size={16} className="text-emerald-500" />
                 <span>TradeFlow Buyer Protection Enabled</span>
               </div>
             </div>
