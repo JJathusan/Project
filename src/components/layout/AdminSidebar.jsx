@@ -2,28 +2,22 @@ import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { 
   BarChart3, 
-  Box, 
-  MessageSquareQuote, 
-  ClipboardList, 
-  Settings, 
-  HelpCircle,
-  ChevronRight,
-  Store,
-  Bell,
-  Truck
+  Users, 
+  Store, 
+  ShoppingBag, 
+  Settings,
+  Shield
 } from "lucide-react";
 
-export default function VendorSidebar({ isCollapsed }) {
+export default function AdminSidebar({ isCollapsed }) {
   const navigate = useNavigate();
   const location = useLocation();
 
   const menuItems = [
-    { name: "Overview", icon: <BarChart3 size={20} />, path: "/vendor/dashboard" },
-    { name: "Inventory", icon: <Box size={20} />, path: "/vendor/inventory" },
-    { name: "Quotes & RFQs", icon: <MessageSquareQuote size={20} />, path: "/vendor/quotes" },
-    { name: "Sales Orders", icon: <ClipboardList size={20} />, path: "/vendor/orders" },
-    { name: "Shipments", icon: <Truck size={20} />, path: "/vendor/shipments" },
-    { name: "Notifications", icon: <Bell size={20} />, path: "/vendor/notifications" },
+    { name: "Dashboard", icon: <BarChart3 size={20} />, path: "/admin/dashboard" },
+    { name: "All Users", icon: <Users size={20} />, path: "/admin/users" },
+    { name: "Vendors", icon: <Store size={20} />, path: "/admin/vendors" },
+    { name: "Buyers", icon: <ShoppingBag size={20} />, path: "/admin/buyers" },
   ];
 
   return (
@@ -31,7 +25,7 @@ export default function VendorSidebar({ isCollapsed }) {
       <div className="p-4 flex-1 overflow-y-auto">
         {!isCollapsed && (
           <p className="px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-4">
-            Vendor Portal
+            Admin Portal
           </p>
         )}
         
@@ -44,12 +38,12 @@ export default function VendorSidebar({ isCollapsed }) {
                 onClick={() => navigate(item.path)}
                 className={`w-full flex items-center px-3 py-2.5 rounded-xl transition-all ${
                   isActive 
-                    ? "bg-emerald-50 text-emerald-600" 
+                    ? "bg-indigo-50 text-indigo-600" 
                     : "text-slate-600 hover:bg-slate-50"
                 } ${isCollapsed ? "justify-center" : ""}`}
               >
                 <div className="flex items-center gap-3">
-                  <span className={isActive ? "text-emerald-600" : "text-slate-400"}>
+                  <span className={isActive ? "text-indigo-600" : "text-slate-400"}>
                     {item.icon}
                   </span>
                   {!isCollapsed && (
@@ -63,6 +57,7 @@ export default function VendorSidebar({ isCollapsed }) {
           })}
         </nav>
 
+        {/* Settings */}
         <div className="mt-8">
           {!isCollapsed && (
             <p className="px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-4">
@@ -71,39 +66,27 @@ export default function VendorSidebar({ isCollapsed }) {
           )}
           <nav className="space-y-1">
             <button
-              onClick={() => navigate("/vendor/settings")}
+              onClick={() => navigate("/admin/settings")}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
-                location.pathname === "/vendor/settings"
-                  ? "bg-emerald-50 text-emerald-600"
+                location.pathname === "/admin/settings"
+                  ? "bg-indigo-50 text-indigo-600"
                   : "text-slate-600 hover:bg-slate-50"
               } ${isCollapsed ? "justify-center" : ""}`}
             >
-              <span className={location.pathname === "/vendor/settings" ? "text-emerald-600" : "text-slate-400"}>
+              <span className={location.pathname === "/admin/settings" ? "text-indigo-600" : "text-slate-400"}>
                 <Settings size={20} />
               </span>
               {!isCollapsed && (
                 <span className="font-bold text-sm whitespace-nowrap">Settings</span>
               )}
             </button>
-            <button
-              onClick={() => navigate("/vendor/help")}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-bold ${
-                location.pathname === "/vendor/help"
-                  ? "bg-emerald-50 text-emerald-600"
-                  : "text-slate-600 hover:bg-slate-50"
-              } ${isCollapsed ? "justify-center" : ""}`}
-              title="Help Center"
-            >
-              <HelpCircle size={20} className={location.pathname === "/vendor/help" ? "text-emerald-600" : "text-slate-400"} />
-              {!isCollapsed && "Help Center"}
-            </button>
           </nav>
         </div>
       </div>
 
       <div className="p-4 border-t border-slate-100">
-        <div className={`bg-gradient-to-br from-emerald-600 to-teal-700 rounded-2xl p-3 text-white shadow-lg shadow-emerald-100 ${isCollapsed ? "flex justify-center" : ""}`}>
-           {isCollapsed ? <Store size={20}/> : <p className="text-xs font-bold text-center uppercase">Store Live</p>}
+        <div className={`bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-3 text-white shadow-lg shadow-indigo-100 ${isCollapsed ? "flex justify-center" : ""}`}>
+           {isCollapsed ? <Shield size={20}/> : <p className="text-xs font-bold text-center uppercase">Admin Panel</p>}
         </div>
       </div>
     </div>

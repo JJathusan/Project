@@ -68,7 +68,7 @@ export default function VendorAuth() {
                   type="text" 
                   placeholder="Your Full Name" 
                   required
-                  className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 transition-all"
+                  className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 transition-all text-slate-900 placeholder:text-slate-400"
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
                 />
               </div>
@@ -81,7 +81,7 @@ export default function VendorAuth() {
                   type="text" 
                   placeholder="Company Name" 
                   required
-                  className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 transition-all"
+                  className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 transition-all text-slate-900 placeholder:text-slate-400"
                   onChange={(e) => setFormData({...formData, companyName: e.target.value})}
                 />
               </div>
@@ -93,7 +93,7 @@ export default function VendorAuth() {
                 type="email" 
                 placeholder="Business Email" 
                 required
-                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 transition-all"
+                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 transition-all text-slate-900 placeholder:text-slate-400"
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
               />
             </div>
@@ -104,7 +104,7 @@ export default function VendorAuth() {
                 type="password" 
                 placeholder="Password" 
                 required
-                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 transition-all"
+                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 transition-all text-slate-900 placeholder:text-slate-400"
                 onChange={(e) => setFormData({...formData, password: e.target.value})}
               />
             </div>

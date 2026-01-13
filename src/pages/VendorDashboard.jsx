@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { TrendingUp, Package, MessageSquareQuote, Users, AlertCircle } from "lucide-react";
+import { TrendingUp, Package, MessageSquareQuote, Users, AlertCircle, FileText } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function VendorDashboard() {
   const [data, setData] = useState(null);
@@ -54,11 +55,8 @@ export default function VendorDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* RFQs (Static for now, connect to DB similarly) */}
-        <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-200 shadow-sm">
-            {/* Table Header... */}
-            <div className="p-6 text-center text-slate-400 font-bold italic">Real-time RFQ integration active.</div>
-        </div>
+        {/* Recent RFQs */}
+        <RecentRFQs />
 
         {/* Dynamic Inventory Health */}
         <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
@@ -83,6 +81,79 @@ export default function VendorDashboard() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function RecentRFQs() {
+  const [rfqs, setRfqs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchRFQs = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      try {
+        const res = await axios.get("http://localhost:5000/api/quotes/vendor", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        // Get latest 5 RFQs
+        setRfqs(res.data.slice(0, 5));
+      } catch (err) {
+        console.error("Failed to fetch RFQs:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRFQs();
+  }, []);
+
+  return (
+    <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="font-black text-slate-900 text-lg uppercase tracking-tight">Recent RFQs</h3>
+        <button
+          onClick={() => navigate("/vendor/quotes")}
+          className="text-xs font-black text-emerald-600 uppercase tracking-widest hover:underline"
+        >
+          View All →
+        </button>
+      </div>
+      {loading ? (
+        <div className="text-center py-8 text-slate-400 font-bold">Loading...</div>
+      ) : rfqs.length > 0 ? (
+        <div className="space-y-3">
+          {rfqs.map((rfq) => (
+            <div
+              key={rfq._id}
+              onClick={() => navigate("/vendor/quotes")}
+              className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-all cursor-pointer"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-2 bg-blue-100 rounded-xl">
+                  <FileText size={16} className="text-blue-600" />
+                </div>
+                <div>
+                  <p className="font-black text-slate-900 text-sm">{rfq.product?.name || "Product"}</p>
+                  <p className="text-xs text-slate-500">From: {rfq.buyer?.name || "Unknown"}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase ${
+                  rfq.status === 'pending' ? 'bg-blue-50 text-blue-600' :
+                  rfq.status === 'quoted' ? 'bg-emerald-50 text-emerald-600' :
+                  'bg-slate-100 text-slate-600'
+                }`}>
+                  {rfq.status}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-8 text-slate-400 font-bold">No RFQs yet</div>
+      )}
     </div>
   );
 }

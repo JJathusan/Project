@@ -1,0 +1,195 @@
+import React, { useState } from "react";
+import { useOutletContext, useNavigate } from "react-router-dom";
+import { HelpCircle, Book, MessageSquare, FileText, Search, ChevronRight, Settings, ShoppingBag } from "lucide-react";
+
+export default function BuyerHelpCenter() {
+  const context = useOutletContext() || {};
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const faqs = [
+    {
+      category: "Getting Started",
+      questions: [
+        {
+          q: "How do I browse products?",
+          a: "Navigate to the Marketplace from the sidebar. You can search for products by name or category, and click on any product card to view detailed information including pricing tiers and specifications."
+        },
+        {
+          q: "How do I request a quote?",
+          a: "On any product detail page, click 'Request a Quote'. Enter your desired quantity and any special requirements. The vendor will respond with a custom price quote."
+        },
+        {
+          q: "How do I place an order?",
+          a: "You can either accept a quote you received, or directly purchase from a product page by clicking 'Start Purchase Order'. Fill in your shipping address and confirm the order."
+        }
+      ]
+    },
+    {
+      category: "Orders & Payments",
+      questions: [
+        {
+          q: "How do I track my orders?",
+          a: "Go to the Orders page from the sidebar to see all your orders. Once a vendor updates the order status with tracking information, you'll see it in the Shipments page."
+        },
+        {
+          q: "What payment methods are accepted?",
+          a: "TradeFlow supports various secure payment methods. Payment details are handled securely through our platform. Contact support for specific payment options."
+        },
+        {
+          q: "Can I cancel an order?",
+          a: "Orders can be cancelled if they haven't been shipped yet. Contact the vendor directly or reach out to support for assistance with order cancellations."
+        }
+      ]
+    },
+    {
+      category: "Quotes & RFQs",
+      questions: [
+        {
+          q: "How long do quotes remain valid?",
+          a: "Quotes typically expire after 7 days, but vendors may set custom expiration dates. Check your RFQs page to see quote expiration times."
+        },
+        {
+          q: "What happens after I accept a quote?",
+          a: "When you accept a quote, an order is automatically created with the quoted price and quantity. You can track the order status in your Orders page."
+        },
+        {
+          q: "Can I negotiate prices?",
+          a: "Yes! You can communicate with vendors through the quote system. Vendors may respond with counter-offers, and you can accept or decline them."
+        }
+      ]
+    },
+    {
+      category: "Account & Settings",
+      questions: [
+        {
+          q: "How do I update my profile?",
+          a: "Navigate to Settings from the sidebar. You can update your name and email address in the Profile Information section."
+        },
+        {
+          q: "How do I change my password?",
+          a: "In the Settings page, use the Change Password section. Enter your current password and your new password twice to confirm."
+        },
+        {
+          q: "How do I view my account information?",
+          a: "Click on your profile icon in the top right, then select 'My Profile' to view your account details and status."
+        }
+      ]
+    }
+  ];
+
+  const filteredFAQs = faqs.map(category => ({
+    ...category,
+    questions: category.questions.filter(q => 
+      q.q.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      q.a.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  })).filter(category => category.questions.length > 0);
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Help Center</h2>
+        <p className="text-slate-500 font-medium">Find answers to common questions and get support.</p>
+      </div>
+
+      <div className="relative">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search for help..."
+          className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl outline-none focus:border-blue-500 transition-all text-slate-900 placeholder:text-slate-400"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <button
+          onClick={() => navigate("/buyer/settings")}
+          className="flex items-center gap-4 p-6 bg-white border border-slate-200 rounded-2xl hover:border-blue-500 hover:shadow-lg transition-all group text-left w-full"
+        >
+          <div className="p-3 bg-blue-50 rounded-xl group-hover:bg-blue-100 transition-all">
+            <Settings size={24} className="text-blue-600" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-black text-slate-900 mb-1">Account Settings</h3>
+            <p className="text-xs text-slate-500">Manage your profile</p>
+          </div>
+          <ChevronRight size={20} className="text-slate-400 group-hover:text-blue-600" />
+        </button>
+
+        <button
+          onClick={() => navigate("/market")}
+          className="flex items-center gap-4 p-6 bg-white border border-slate-200 rounded-2xl hover:border-blue-500 hover:shadow-lg transition-all group text-left w-full"
+        >
+          <div className="p-3 bg-emerald-50 rounded-xl group-hover:bg-emerald-100 transition-all">
+            <ShoppingBag size={24} className="text-emerald-600" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-black text-slate-900 mb-1">Marketplace Guide</h3>
+            <p className="text-xs text-slate-500">Learn about shopping</p>
+          </div>
+          <ChevronRight size={20} className="text-slate-400 group-hover:text-blue-600" />
+        </button>
+
+        <button
+          onClick={() => navigate("/buyer/rfqs")}
+          className="flex items-center gap-4 p-6 bg-white border border-slate-200 rounded-2xl hover:border-blue-500 hover:shadow-lg transition-all group text-left w-full"
+        >
+          <div className="p-3 bg-purple-50 rounded-xl group-hover:bg-purple-100 transition-all">
+            <MessageSquare size={24} className="text-purple-600" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-black text-slate-900 mb-1">RFQ Help</h3>
+            <p className="text-xs text-slate-500">Quote management</p>
+          </div>
+          <ChevronRight size={20} className="text-slate-400 group-hover:text-blue-600" />
+        </button>
+      </div>
+
+      <div className="space-y-6">
+        {filteredFAQs.map((category, catIdx) => (
+          <div key={catIdx} className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-blue-50 rounded-xl">
+                <FileText size={20} className="text-blue-600" />
+              </div>
+              <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">{category.category}</h3>
+            </div>
+
+            <div className="space-y-4">
+              {category.questions.map((faq, idx) => (
+                <div key={idx} className="border-b border-slate-100 last:border-0 pb-4 last:pb-0">
+                  <h4 className="font-black text-slate-900 mb-2">{faq.q}</h4>
+                  <p className="text-sm text-slate-600 leading-relaxed">{faq.a}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {filteredFAQs.length === 0 && searchQuery && (
+        <div className="flex flex-col items-center justify-center py-20 text-slate-400 bg-white rounded-[2.5rem] border border-dashed border-slate-200">
+          <HelpCircle size={48} className="mb-4 opacity-20" />
+          <p className="font-black uppercase text-sm tracking-tighter">No results found</p>
+          <p className="text-xs mt-2">Try a different search term</p>
+        </div>
+      )}
+
+      <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-3xl p-8 text-white">
+        <div className="flex items-start justify-between">
+          <div>
+            <h3 className="text-2xl font-black mb-2 uppercase">Still Need Help?</h3>
+            <p className="text-blue-100 mb-6">Our support team is here to assist you.</p>
+            <button className="px-6 py-3 bg-white text-blue-600 rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-blue-50 transition-all">
+              Contact Support
+            </button>
+          </div>
+          <MessageSquare size={48} className="opacity-20" />
+        </div>
+      </div>
+    </div>
+  );
+}

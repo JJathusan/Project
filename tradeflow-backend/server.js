@@ -5,6 +5,9 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/auth.js"; 
 import vendorRoutes from './routes/vendor.js';
 import productRoutes from './routes/products.js';
+import quoteRoutes from './routes/quotes.js';
+import orderRoutes from './routes/orders.js';
+import adminRoutes from './routes/admin.js';
 
 dotenv.config();
 
@@ -18,6 +21,9 @@ app.use('/api/products', productRoutes);
 // Routes
 app.use("/api/auth", authRoutes);
 app.use('/api/vendor', vendorRoutes);
+app.use('/api/quotes', quoteRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get("/", (req, res) => {
   res.send("TradeFlow Backend Running 🚀");

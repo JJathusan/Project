@@ -12,7 +12,7 @@ export default function VendorInventory() {
     name: "",
     category: "",
     description: "",
-    unit: "meters",
+    unit: "",
     moq: 100,
     leadTime: "10-15 days",
     location: "",
@@ -60,7 +60,7 @@ export default function VendorInventory() {
       setIsModalOpen(false);
       fetchInventory();
       setNewProduct({
-        name: "", category: "", description: "", unit: "meters",
+        name: "", category: "", description: "", unit: "",
         moq: 100, leadTime: "10-15 days", location: "", stock: "", price: "", images: [""]
       });
     } catch (err) {
@@ -97,9 +97,14 @@ export default function VendorInventory() {
     }
   };
 
-  const filteredInventory = inventory.filter(item => 
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredInventory = inventory.filter(item => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      (item.name && item.name.toLowerCase().includes(query)) ||
+      (item.category && item.category.toLowerCase().includes(query))
+    );
+  });
 
   return (
     <div className="space-y-6 p-4 md:p-8">
@@ -194,20 +199,20 @@ export default function VendorInventory() {
             <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight mb-6">Launch New Product</h3>
             <form onSubmit={handleAddProduct} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input required placeholder="Product Name" className="p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500" value={newProduct.name} onChange={(e) => setNewProduct({...newProduct, name: e.target.value})} />
-                <input required placeholder="Category" className="p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500" value={newProduct.category} onChange={(e) => setNewProduct({...newProduct, category: e.target.value})} />
+                <input required placeholder="Product Name" className="p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 text-slate-900 placeholder:text-slate-400" value={newProduct.name} onChange={(e) => setNewProduct({...newProduct, name: e.target.value})} />
+                <input required placeholder="Category" className="p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 text-slate-900 placeholder:text-slate-400" value={newProduct.category} onChange={(e) => setNewProduct({...newProduct, category: e.target.value})} />
               </div>
-              <textarea required placeholder="Description" className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 h-24" value={newProduct.description} onChange={(e) => setNewProduct({...newProduct, description: e.target.value})} />
+              <textarea required placeholder="Description" className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 h-24 text-slate-900 placeholder:text-slate-400" value={newProduct.description} onChange={(e) => setNewProduct({...newProduct, description: e.target.value})} />
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <input placeholder="Unit" className="p-4 bg-slate-50 border border-slate-100 rounded-2xl" value={newProduct.unit} onChange={(e) => setNewProduct({...newProduct, unit: e.target.value})} />
-                <input type="number" placeholder="MOQ" className="p-4 bg-slate-50 border border-slate-100 rounded-2xl" value={newProduct.moq} onChange={(e) => setNewProduct({...newProduct, moq: e.target.value})} />
-                <input placeholder="Location" className="p-4 bg-slate-50 border border-slate-100 rounded-2xl" value={newProduct.location} onChange={(e) => setNewProduct({...newProduct, location: e.target.value})} />
+                <input placeholder="Unit (e.g. kg, pcs, boxes)" className="p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 text-slate-900 placeholder:text-slate-400" value={newProduct.unit} onChange={(e) => setNewProduct({...newProduct, unit: e.target.value})} />
+                <input type="number" placeholder="MOQ" className="p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 text-slate-900 placeholder:text-slate-400" value={newProduct.moq} onChange={(e) => setNewProduct({...newProduct, moq: e.target.value})} />
+                <input placeholder="Location" className="p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 text-slate-900 placeholder:text-slate-400" value={newProduct.location} onChange={(e) => setNewProduct({...newProduct, location: e.target.value})} />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input placeholder="Stock (e.g. 500)" className="p-4 bg-slate-50 border border-slate-100 rounded-2xl" value={newProduct.stock} onChange={(e) => setNewProduct({...newProduct, stock: e.target.value})} />
-                <input placeholder="Price (e.g. $10)" className="p-4 bg-slate-50 border border-slate-100 rounded-2xl" value={newProduct.price} onChange={(e) => setNewProduct({...newProduct, price: e.target.value})} />
+                <input placeholder="Stock (e.g. 500)" className="p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 text-slate-900 placeholder:text-slate-400" value={newProduct.stock} onChange={(e) => setNewProduct({...newProduct, stock: e.target.value})} />
+                <input placeholder="Price (e.g. $10)" className="p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 text-slate-900 placeholder:text-slate-400" value={newProduct.price} onChange={(e) => setNewProduct({...newProduct, price: e.target.value})} />
               </div>
-              <input placeholder="Image URL" className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none" value={newProduct.images[0]} onChange={(e) => {
+              <input placeholder="Image URL" className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 text-slate-900 placeholder:text-slate-400" value={newProduct.images[0]} onChange={(e) => {
                 const imgs = [...newProduct.images];
                 imgs[0] = e.target.value;
                 setNewProduct({...newProduct, images: imgs});

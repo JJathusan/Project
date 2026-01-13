@@ -1,13 +1,16 @@
 import express from 'express';
 import Product from '../models/Product.js';
 import User from '../models/User.js';
-import { verifyToken } from '../middleware/auth.js';
+import { verifyVendorOrAdmin } from '../middleware/roles.js';
 
 const router = express.Router();
 
-// 1. GET Dashboard Stats
-router.get('/stats', verifyToken, async (req, res) => {
+// 1. GET Dashboard Stats (Vendor or Admin)
+router.get('/stats', verifyVendorOrAdmin, async (req, res) => {
   try {
+    const Order = (await import('../models/Order.js')).default;
+    const Quote = (await import('../models/Quote.js')).default;
+    
     const products = await Product.find({ vendor: req.user.id });
     const inventoryHealth = products.map(p => ({
       name: p.name,
@@ -15,11 +18,36 @@ router.get('/stats', verifyToken, async (req, res) => {
       status: p.status
     }));
 
+    // Calculate real revenue from orders
+    const orders = await Order.find({ 
+      vendor: req.user.id,
+      status: { $in: ['confirmed', 'processing', 'shipped', 'delivered'] }
+    });
+    const totalRevenue = orders.reduce((sum, order) => sum + (order.totalPrice || 0), 0);
+
+    // Get active quotes count
+    const activeQuotes = await Quote.countDocuments({ 
+      vendor: req.user.id,
+      status: { $in: ['quoted', 'negotiating'] }
+    });
+
+    // Get pending shipments count
+    const pendingShipments = await Order.countDocuments({ 
+      vendor: req.user.id,
+      status: { $in: ['confirmed', 'processing', 'shipped'] }
+    });
+
+    // Get new RFQs count
+    const newRFQs = await Quote.countDocuments({ 
+      vendor: req.user.id,
+      status: 'pending'
+    });
+
     res.json({
-      revenue: "$42,850",
-      activeQuotes: 18,
-      pendingShipments: 7,
-      newRFQs: 24,
+      revenue: `$${totalRevenue.toLocaleString()}`,
+      activeQuotes: activeQuotes,
+      pendingShipments: pendingShipments,
+      newRFQs: newRFQs,
       inventoryHealth: inventoryHealth
     });
   } catch (err) {
@@ -27,8 +55,8 @@ router.get('/stats', verifyToken, async (req, res) => {
   }
 });
 
-// 2. GET Full Inventory
-router.get('/inventory', verifyToken, async (req, res) => {
+// 2. GET Full Inventory (Vendor or Admin)
+router.get('/inventory', verifyVendorOrAdmin, async (req, res) => {
   try {
     const products = await Product.find({ vendor: req.user.id }).sort({ createdAt: -1 });
     res.json(products);
@@ -37,8 +65,8 @@ router.get('/inventory', verifyToken, async (req, res) => {
   }
 });
 
-// 3. POST Add Product
-router.post('/add-product', verifyToken, async (req, res) => {
+// 3. POST Add Product (Vendor or Admin)
+router.post('/add-product', verifyVendorOrAdmin, async (req, res) => {
   try {
     const { name, category, price, moq } = req.body;
 
@@ -71,8 +99,8 @@ router.post('/add-product', verifyToken, async (req, res) => {
 
 // --- MOVED OUTSIDE OF ADD-PRODUCT ---
 
-// 4. DELETE Product
-router.delete('/product/:id', verifyToken, async (req, res) => {
+// 4. DELETE Product (Vendor or Admin)
+router.delete('/product/:id', verifyVendorOrAdmin, async (req, res) => {
   try {
     await Product.findOneAndDelete({ _id: req.params.id, vendor: req.user.id });
     res.json({ message: "Product deleted successfully" });
@@ -81,8 +109,8 @@ router.delete('/product/:id', verifyToken, async (req, res) => {
   }
 });
 
-// 5. PATCH (Update) Product
-router.patch('/product/:id', verifyToken, async (req, res) => {
+// 5. PATCH (Update) Product (Vendor or Admin)
+router.patch('/product/:id', verifyVendorOrAdmin, async (req, res) => {
   try {
     const updated = await Product.findOneAndUpdate(
       { _id: req.params.id, vendor: req.user.id },

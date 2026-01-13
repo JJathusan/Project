@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { 
   LayoutGrid, 
   FileText, 
@@ -6,15 +7,19 @@ import {
   Truck, 
   Settings, 
   HelpCircle,
+  Bell,
   ChevronRight
 } from "lucide-react";
 
 export default function Sidebar({ isCollapsed }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const menuItems = [
-    { name: "Marketplace", icon: <LayoutGrid size={20} />, active: true },
-    { name: "RFQs", icon: <FileText size={20} />, active: false },
-    { name: "Orders", icon: <Package size={20} />, active: false },
-    { name: "Shipments", icon: <Truck size={20} />, active: false },
+    { name: "Marketplace", icon: <LayoutGrid size={20} />, path: "/market" },
+    { name: "RFQs", icon: <FileText size={20} />, path: "/buyer/rfqs" },
+    { name: "Orders & Shipments", icon: <Package size={20} />, path: "/buyer/orders" },
+    { name: "Notifications", icon: <Bell size={20} />, path: "/buyer/notifications" },
   ];
 
   return (
@@ -28,25 +33,29 @@ export default function Sidebar({ isCollapsed }) {
         )}
         
         <nav className="space-y-1">
-          {menuItems.map((item) => (
-            <button
-              key={item.name}
-              className={`w-full flex items-center px-3 py-2.5 rounded-xl transition-all duration-200 group ${
-                item.active 
-                  ? "bg-blue-50 text-blue-600 shadow-sm" 
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-              } ${isCollapsed ? "justify-center" : "justify-between"}`}
-              title={isCollapsed ? item.name : ""}
-            >
-              <div className="flex items-center gap-3">
-                <span className={`${item.active ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600"}`}>
-                  {item.icon}
-                </span>
-                {!isCollapsed && <span className="font-bold text-sm whitespace-nowrap">{item.name}</span>}
-              </div>
-              {!isCollapsed && item.active && <ChevronRight size={14} />}
-            </button>
-          ))}
+          {menuItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <button
+                key={item.name}
+                onClick={() => navigate(item.path)}
+                className={`w-full flex items-center px-3 py-2.5 rounded-xl transition-all duration-200 group ${
+                  isActive 
+                    ? "bg-blue-50 text-blue-600 shadow-sm" 
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                } ${isCollapsed ? "justify-center" : "justify-between"}`}
+                title={isCollapsed ? item.name : ""}
+              >
+                <div className="flex items-center gap-3">
+                  <span className={`${isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600"}`}>
+                    {item.icon}
+                  </span>
+                  {!isCollapsed && <span className="font-bold text-sm whitespace-nowrap">{item.name}</span>}
+                </div>
+                {!isCollapsed && isActive && <ChevronRight size={14} />}
+              </button>
+            );
+          })}
         </nav>
 
         <div className="mt-8">
@@ -56,12 +65,28 @@ export default function Sidebar({ isCollapsed }) {
             </p>
           )}
           <nav className="space-y-1">
-            <button className={`w-full flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-xl transition-all text-sm font-bold ${isCollapsed ? "justify-center" : ""}`} title="Settings">
-              <Settings size={20} className="text-slate-400" />
+            <button
+              onClick={() => navigate("/buyer/settings")}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-bold ${
+                location.pathname === "/buyer/settings"
+                  ? "bg-blue-50 text-blue-600"
+                  : "text-slate-600 hover:bg-slate-50"
+              } ${isCollapsed ? "justify-center" : ""}`}
+              title="Settings"
+            >
+              <Settings size={20} className={location.pathname === "/buyer/settings" ? "text-blue-600" : "text-slate-400"} />
               {!isCollapsed && "Settings"}
             </button>
-            <button className={`w-full flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-xl transition-all text-sm font-bold ${isCollapsed ? "justify-center" : ""}`} title="Help Center">
-              <HelpCircle size={20} className="text-slate-400" />
+            <button
+              onClick={() => navigate("/buyer/help")}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-bold ${
+                location.pathname === "/buyer/help"
+                  ? "bg-blue-50 text-blue-600"
+                  : "text-slate-600 hover:bg-slate-50"
+              } ${isCollapsed ? "justify-center" : ""}`}
+              title="Help Center"
+            >
+              <HelpCircle size={20} className={location.pathname === "/buyer/help" ? "text-blue-600" : "text-slate-400"} />
               {!isCollapsed && "Help Center"}
             </button>
           </nav>

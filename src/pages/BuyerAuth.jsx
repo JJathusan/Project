@@ -53,20 +53,20 @@ export default function BuyerAuth() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
-              <input 
-                type="text" placeholder="Full Name" 
-                className="w-full p-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none"
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-              />
+            <input 
+              type="text" placeholder="Full Name" 
+              className="w-full p-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none text-slate-900 placeholder:text-slate-400"
+              onChange={(e) => setFormData({...formData, name: e.target.value})}
+            />
             )}
             <input 
               type="email" placeholder="Email Address" 
-              className="w-full p-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none"
+              className="w-full p-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none text-slate-900 placeholder:text-slate-400"
               onChange={(e) => setFormData({...formData, email: e.target.value})}
             />
             <input 
               type="password" placeholder="Password" 
-              className="w-full p-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none"
+              className="w-full p-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none text-slate-900 placeholder:text-slate-400"
               onChange={(e) => setFormData({...formData, password: e.target.value})}
             />
             <button className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-2">

@@ -8,12 +8,16 @@ export default function Navbar({ onSearch, isVendor = false }) {
   const [userData, setUserData] = useState({ name: "User", role: "Member" });
   const navigate = useNavigate();
 
+  // Get user role from localStorage
+  const userRole = localStorage.getItem("userRole") || "";
+  const isAdmin = userRole === "admin";
+
   // Theme configuration
   const theme = {
-    accent: isVendor ? "text-emerald-600" : "text-blue-600",
-    bgAccent: isVendor ? "bg-emerald-600" : "bg-blue-600",
-    hover: isVendor ? "hover:bg-emerald-50" : "hover:bg-blue-50",
-    roleLabel: isVendor ? "Verified Vendor" : "Verified Buyer",
+    accent: isAdmin ? "text-indigo-600" : isVendor ? "text-emerald-600" : "text-blue-600",
+    bgAccent: isAdmin ? "bg-indigo-600" : isVendor ? "bg-emerald-600" : "bg-blue-600",
+    hover: isAdmin ? "hover:bg-indigo-50" : isVendor ? "hover:bg-emerald-50" : "hover:bg-blue-50",
+    roleLabel: isAdmin ? "Admin" : isVendor ? "Verified Vendor" : "Verified Buyer",
   };
 
   // Fetch User Data from localStorage/Token on mount
@@ -29,7 +33,15 @@ export default function Navbar({ onSearch, isVendor = false }) {
     localStorage.removeItem("token");
     localStorage.removeItem("userName");
     localStorage.removeItem("userRole");
-    navigate("/login");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("companyName");
+    if (isAdmin) {
+      navigate("/admin/login");
+    } else if (isVendor) {
+      navigate("/vendor/login");
+    } else {
+      navigate("/buyer/login");
+    }
   };
 
   const handleSearchChange = (e) => {
@@ -46,7 +58,12 @@ export default function Navbar({ onSearch, isVendor = false }) {
         <h1 className={`font-black text-2xl tracking-tighter cursor-pointer ${theme.accent}`} onClick={() => navigate('/')}>
           Trade<span className="text-slate-900">Flow</span>
         </h1>
-        {isVendor && (
+        {isAdmin && (
+          <span className="ml-3 px-2 py-0.5 bg-indigo-50 text-indigo-700 text-[10px] font-black uppercase rounded border border-indigo-100">
+            Admin Portal
+          </span>
+        )}
+        {isVendor && !isAdmin && (
           <span className="ml-3 px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase rounded border border-emerald-100">
             Vendor Portal
           </span>
@@ -62,17 +79,22 @@ export default function Navbar({ onSearch, isVendor = false }) {
             value={searchTerm}
             onChange={handleSearchChange}
             placeholder={isVendor ? "Search inventory..." : "Search products..."} 
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-11 pr-10 text-sm focus:bg-white outline-none transition-all placeholder:text-slate-400 font-medium"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-11 pr-10 text-sm focus:bg-white outline-none transition-all placeholder:text-slate-400 font-medium text-slate-900"
           />
         </div>
       </div>
 
       {/* 3. Utility Actions */}
       <div className="flex items-center gap-2 lg:gap-4">
-        <button className={`relative p-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all`}>
-          <Bell size={20} />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 border-2 border-white rounded-full"></span>
-        </button>
+        {isVendor && (
+          <button 
+            onClick={() => navigate("/vendor/notifications")}
+            className={`relative p-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all`}
+          >
+            <Bell size={20} />
+            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 border-2 border-white rounded-full"></span>
+          </button>
+        )}
 
         {/* User Profile Dropdown */}
         <div className="relative">
@@ -88,7 +110,7 @@ export default function Navbar({ onSearch, isVendor = false }) {
             </div>
             
             {/* Dynamic Avatar Initials */}
-            <div className={`h-10 w-10 rounded-xl flex items-center justify-center text-white text-xs font-black shadow-lg shadow-slate-200 transition-all ${isVendor ? 'bg-emerald-600' : 'bg-blue-600'}`}>
+            <div className={`h-10 w-10 rounded-xl flex items-center justify-center text-white text-xs font-black shadow-lg shadow-slate-200 transition-all ${isAdmin ? 'bg-indigo-600' : isVendor ? 'bg-emerald-600' : 'bg-blue-600'}`}>
               {userData.name.substring(0, 2).toUpperCase()}
             </div>
           </div>
@@ -103,12 +125,28 @@ export default function Navbar({ onSearch, isVendor = false }) {
                   <p className="text-sm font-bold text-slate-900 truncate">{userData.name}</p>
                 </div>
                 
-                <button className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-600 ${theme.hover} transition-colors`}>
-                  <User size={16} /> My Profile
-                </button>
-                <button className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-600 ${theme.hover} transition-colors`}>
-                  <Settings size={16} /> Account Settings
-                </button>
+                {!isAdmin && (
+                  <button 
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      navigate(isVendor ? "/vendor/profile" : "/buyer/profile");
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-600 ${theme.hover} transition-colors`}
+                  >
+                    <User size={16} /> My Profile
+                  </button>
+                )}
+                {!isAdmin && (
+                  <button 
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      navigate(isVendor ? "/vendor/settings" : "/buyer/settings");
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-600 ${theme.hover} transition-colors`}
+                  >
+                    <Settings size={16} /> Account Settings
+                  </button>
+                )}
                 
                 <div className="h-px bg-slate-100 my-1"></div>
                 

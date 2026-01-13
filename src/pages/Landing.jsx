@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { ShoppingBag, Truck, ArrowRight } from "lucide-react";
+import { ShoppingBag, Truck, ArrowRight, Shield } from "lucide-react";
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -9,6 +9,8 @@ export default function Landing() {
   const handleEntry = (role) => {
     if (role === "vendor") {
       navigate("/vendor/login");
+    } else if (role === "admin") {
+      navigate("/admin/login");
     } else {
       navigate("/buyer/login");
     }
@@ -18,7 +20,7 @@ export default function Landing() {
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center px-4 relative overflow-hidden font-sans">
       
       {/* 1. Global Progress Border */}
-      <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-600 via-green-500 to-emerald-400 z-50" />
+      <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-600 via-emerald-500 to-indigo-600 z-50" />
       
       {/* 2. Modern Ambient Background Blobs */}
       <div className="absolute -top-24 -left-24 w-[500px] h-[500px] bg-blue-100 rounded-full mix-blend-multiply filter blur-[100px] opacity-40 animate-pulse" />
@@ -45,7 +47,7 @@ export default function Landing() {
         </p>
 
         {/* 4. Selection Cards */}
-        <div className="grid md:grid-cols-2 gap-6 w-full max-w-3xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-6 w-full max-w-5xl mx-auto">
           
           {/* Buyer Entry */}
           <button
@@ -78,6 +80,23 @@ export default function Landing() {
             </p>
             <div className="flex items-center text-emerald-600 font-bold text-sm">
               Vendor Dashboard <ArrowRight size={18} className="ml-2 group-hover:translate-x-2 transition-transform" />
+            </div>
+          </button>
+
+          {/* Admin Entry */}
+          <button
+            onClick={() => handleEntry("admin")}
+            className="group relative p-8 bg-white border border-slate-200 rounded-3xl shadow-sm hover:shadow-2xl hover:border-indigo-500 hover:-translate-y-1 transition-all duration-300 text-left"
+          >
+            <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 rotate-3 group-hover:rotate-0">
+              <Shield size={28} />
+            </div>
+            <h3 className="text-2xl font-black text-slate-900 mb-2">I'm an Admin</h3>
+            <p className="text-slate-500 text-sm mb-6 leading-relaxed">
+              Manage all vendors and buyers, monitor system activity, and oversee platform operations.
+            </p>
+            <div className="flex items-center text-indigo-600 font-bold text-sm">
+              Admin Panel <ArrowRight size={18} className="ml-2 group-hover:translate-x-2 transition-transform" />
             </div>
           </button>
         </div>
