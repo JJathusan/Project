@@ -6,6 +6,9 @@ import BuyerAuth from "./pages/BuyerAuth";
 import VendorAuth from "./pages/VendorAuth";
 import AdminAuth from "./pages/AdminAuth";
 
+// Vendor Profile Setup (NEW)
+import VendorProfileSetup from "./pages/VendorProfileSetup";
+
 // Landing & General Pages
 import Landing from "./pages/Landing";
 import Marketplace from "./pages/Marketplace";
@@ -53,7 +56,17 @@ export default function App() {
         <Route path="/vendor/login" element={<VendorAuth />} />
         <Route path="/admin/login" element={<AdminAuth />} />
 
-        {/* 2. Buyer/Public Section (Shared Layout) - Admins can also access */}
+        {/* 2. Vendor Setup - Must be completed after signup */}
+        <Route 
+          path="/vendor-setup" 
+          element={
+            <ProtectedRoute requiredRole="vendor">
+              <VendorProfileSetup />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* 3. Buyer/Public Section */}
         <Route element={<Layout />}>
           <Route path="/market" element={<Marketplace />} />
           <Route path="/product/:id" element={<ProductDetail />} />
@@ -65,7 +78,7 @@ export default function App() {
           <Route path="/buyer/notifications" element={<BuyerNotifications />} />
         </Route>
 
-        {/* 3. Vendor Section (Emerald Theme) - Protected (Admins can also access) */}
+        {/* 4. Vendor Section - Protected */}
         <Route
           element={
             <ProtectedRoute requiredRole="vendor" allowAdmin={true}>
@@ -84,7 +97,7 @@ export default function App() {
           <Route path="/vendor/help" element={<VendorHelpCenter />} />
         </Route>
 
-        {/* 4. Admin Section (Indigo Theme) - Protected */}
+        {/* 5. Admin Section - Protected */}
         <Route
           element={
             <ProtectedRoute requiredRole="admin">
@@ -99,7 +112,7 @@ export default function App() {
           <Route path="/admin/settings" element={<AdminSettings />} />
         </Route>
 
-        {/* 5. Catch-all / Redirects */}
+        {/* 6. Catch-all */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

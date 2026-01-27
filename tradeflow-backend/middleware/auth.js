@@ -7,7 +7,6 @@ export const verifyToken = (req, res, next) => {
     return res.status(401).json({ message: "Access Denied: No Token Provided" });
   }
 
-  // Extract token from "Bearer <token>"
   const token = authHeader.split(' ')[1];
 
   try {
@@ -20,7 +19,7 @@ export const verifyToken = (req, res, next) => {
     req.user = decoded; 
     next();
   } catch (err) {
-    console.error("Token Error:", err.message); // This will show "jwt malformed" or "jwt expired"
-    return res.status(400).json({ message: "Invalid Token", error: err.message });
+    console.error("Token Error:", err.message);
+    return res.status(401).json({ message: "Invalid or Expired Token", error: err.message });
   }
 };

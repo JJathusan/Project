@@ -1,20 +1,54 @@
-import React, { useState, useEffect } from "react";
-import { useOutletContext } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { Save, User, Building2, Mail, Lock, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { 
+  Save, User, Building2, Mail, Lock, Loader2, CheckCircle, 
+  Upload, Landmark, FileText, Image as ImageIcon, MapPin,
+  Briefcase, Globe, Percent
+} from "lucide-react";
 
 export default function VendorSettings() {
-  const context = useOutletContext() || {};
+  const fileInputRef = useRef(null);
+  const licenseInputRef = useRef(null);
+  
+  // 1. Unified State for User Account and Vendor Profile
   const [userData, setUserData] = useState({
     name: "",
     email: "",
     companyName: ""
   });
+
+  const [vendorProfile, setVendorProfile] = useState({
+    businessRegNumber: "",
+    industry: "",
+    description: "",
+    yearsInBusiness: "",
+    companySize: "",
+    contactPerson: "",
+    phone: "",
+    officeAddress: "",
+    country: "",
+    taxId: "",
+    responseTime: "Within 24 hours",
+    fulfillmentRate: 100,
+    bankDetails: {
+      accountName: "",
+      accountNumber: "",
+      bankName: "",
+      swiftCode: ""
+    }
+  });
+
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: ""
   });
+
+  // Files and Previews
+  const [files, setFiles] = useState({ logo: null, license: null });
+  const [previews, setPreviews] = useState({ logo: "", license: "" });
+
+  // Loading & Feedback States
   const [loading, setLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -23,30 +57,49 @@ export default function VendorSettings() {
   const [passwordError, setPasswordError] = useState("");
 
   useEffect(() => {
-    fetchProfile();
+    fetchFullData();
   }, []);
 
-  const fetchProfile = async () => {
+  const fetchFullData = async () => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
     try {
-      const res = await axios.get("http://localhost:5000/api/auth/profile", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const headers = { Authorization: `Bearer ${token}` };
+      const [authRes, profileRes] = await Promise.all([
+        axios.get("http://localhost:5000/api/auth/profile", { headers }),
+        axios.get("http://localhost:5000/api/vendors/profile", { headers })
+      ]);
       
       setUserData({
-        name: res.data.name || "",
-        email: res.data.email || "",
-        companyName: res.data.companyName || ""
+        name: authRes.data.name || "",
+        email: authRes.data.email || "",
+        companyName: authRes.data.companyName || ""
       });
+
+      if (profileRes.data) {
+        setVendorProfile({
+          ...profileRes.data,
+          bankDetails: profileRes.data.bankDetails || vendorProfile.bankDetails
+        });
+        
+        if (profileRes.data.logo) {
+          setPreviews(prev => ({ ...prev, logo: `http://localhost:5000${profileRes.data.logo}` }));
+        }
+        if (profileRes.data.businessLicenseUrl) {
+          setPreviews(prev => ({ ...prev, license: `http://localhost:5000${profileRes.data.businessLicenseUrl}` }));
+        }
+      }
     } catch (err) {
-      console.error("Failed to fetch profile:", err);
-      // Fallback to localStorage
-      const name = localStorage.getItem("userName") || "";
-      const email = localStorage.getItem("userEmail") || "";
-      const companyName = localStorage.getItem("companyName") || "";
-      setUserData({ name, email, companyName });
+      console.error("Failed to fetch full data:", err);
+    }
+  };
+
+  const handleFileChange = (e, type) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFiles(prev => ({ ...prev, [type]: file }));
+      setPreviews(prev => ({ ...prev, [type]: URL.createObjectURL(file) }));
     }
   };
 
@@ -58,22 +111,30 @@ export default function VendorSettings() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.patch(
-        "http://localhost:5000/api/auth/profile",
-        {
-          name: userData.name,
-          email: userData.email,
-          companyName: userData.companyName
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      const headers = { Authorization: `Bearer ${token}` };
 
-      // Update localStorage
-      localStorage.setItem("userName", res.data.user.name);
-      localStorage.setItem("userEmail", res.data.user.email);
-      localStorage.setItem("companyName", res.data.user.companyName || "");
+      // 1. Update Auth Account Data
+      await axios.patch("http://localhost:5000/api/auth/profile", userData, { headers });
+
+      // 2. Update Vendor Business Profile
+      const formData = new FormData();
+      Object.keys(vendorProfile).forEach(key => {
+        if (key === "bankDetails") {
+          formData.append(key, JSON.stringify(vendorProfile[key]));
+        } else if (key !== "_id" && key !== "user" && key !== "__v" && key !== "logo" && key !== "businessLicenseUrl") {
+          formData.append(key, vendorProfile[key] === null ? "" : vendorProfile[key]);
+        }
+      });
+
+      formData.set("companyName", userData.companyName); // Sync company name
+      if (files.logo) formData.append("logo", files.logo);
+      if (files.license) formData.append("businessLicense", files.license);
+
+      await axios.post("http://localhost:5000/api/vendors/setup", formData, {
+        headers: { ...headers, "Content-Type": "multipart/form-data" }
+      });
+
+      localStorage.setItem("userName", userData.name);
       
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
@@ -87,36 +148,22 @@ export default function VendorSettings() {
   const handlePasswordUpdate = async (e) => {
     e.preventDefault();
     setPasswordError("");
-    
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       setPasswordError("New passwords do not match");
-      return;
-    }
-
-    if (passwordData.newPassword.length < 6) {
-      setPasswordError("Password must be at least 6 characters");
       return;
     }
 
     setPasswordLoading(true);
     try {
       const token = localStorage.getItem("token");
-      await axios.patch(
-        "http://localhost:5000/api/auth/password",
-        {
-          currentPassword: passwordData.currentPassword,
-          newPassword: passwordData.newPassword
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      await axios.patch("http://localhost:5000/api/auth/password", {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
+      }, { headers: { Authorization: `Bearer ${token}` } });
 
       setPasswordSaved(true);
       setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
-      setTimeout(() => {
-        setPasswordSaved(false);
-      }, 3000);
+      setTimeout(() => setPasswordSaved(false), 3000);
     } catch (err) {
       setPasswordError(err.response?.data?.message || "Failed to update password");
     } finally {
@@ -125,165 +172,146 @@ export default function VendorSettings() {
   };
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Settings</h2>
-        <p className="text-slate-500 font-medium">Manage your account and preferences.</p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Profile Settings */}
-        <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 bg-emerald-50 rounded-xl">
-              <User size={20} className="text-emerald-600" />
-            </div>
-            <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Profile Information</h3>
-          </div>
-
-          <form onSubmit={handleProfileUpdate} className="space-y-4">
-            <div>
-              <label className="block text-xs font-black text-slate-400 mb-2 uppercase tracking-widest">Full Name</label>
-              <div className="relative">
-                <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  value={userData.name}
-                  onChange={(e) => setUserData({...userData, name: e.target.value})}
-                  className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 transition-all text-slate-900 placeholder:text-slate-400"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-black text-slate-400 mb-2 uppercase tracking-widest">Email Address</label>
-              <div className="relative">
-                <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="email"
-                  value={userData.email}
-                  onChange={(e) => setUserData({...userData, email: e.target.value})}
-                  className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 transition-all text-slate-900 placeholder:text-slate-400"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-black text-slate-400 mb-2 uppercase tracking-widest">Company Name</label>
-              <div className="relative">
-                <Building2 size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  value={userData.companyName}
-                  onChange={(e) => setUserData({...userData, companyName: e.target.value})}
-                  className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 transition-all text-slate-900 placeholder:text-slate-400"
-                  required
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-4 bg-emerald-600 disabled:bg-slate-100 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {loading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-              {saved ? "Saved!" : "Save Changes"}
-            </button>
-            {saved && (
-              <div className="flex items-center gap-2 text-emerald-600 text-sm font-bold">
-                <CheckCircle size={16} />
-                Profile updated successfully
-              </div>
-            )}
-            {error && (
-              <div className="flex items-center gap-2 text-red-600 text-sm font-bold">
-                <XCircle size={16} />
-                {error}
-              </div>
-            )}
-          </form>
-        </div>
-
-        {/* Password Settings */}
-        <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 bg-blue-50 rounded-xl">
-              <Lock size={20} className="text-blue-600" />
-            </div>
-            <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Change Password</h3>
-          </div>
-
-          <form onSubmit={handlePasswordUpdate} className="space-y-4">
-            <div>
-              <label className="block text-xs font-black text-slate-400 mb-2 uppercase tracking-widest">Current Password</label>
-              <div className="relative">
-                <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="password"
-                  value={passwordData.currentPassword}
-                  onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                  className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 transition-all text-slate-900 placeholder:text-slate-400"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-black text-slate-400 mb-2 uppercase tracking-widest">New Password</label>
-              <div className="relative">
-                <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="password"
-                  value={passwordData.newPassword}
-                  onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                  className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 transition-all text-slate-900 placeholder:text-slate-400"
-                  required
-                  minLength={6}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-black text-slate-400 mb-2 uppercase tracking-widest">Confirm New Password</label>
-              <div className="relative">
-                <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="password"
-                  value={passwordData.confirmPassword}
-                  onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-                  className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 transition-all text-slate-900 placeholder:text-slate-400"
-                  required
-                  minLength={6}
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={passwordLoading}
-              className="w-full py-4 bg-slate-900 disabled:bg-slate-100 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {passwordLoading ? <Loader2 className="animate-spin" size={18} /> : <Lock size={18} />}
-              Update Password
-            </button>
-            {passwordSaved && (
-              <div className="flex items-center gap-2 text-emerald-600 text-sm font-bold">
-                <CheckCircle size={16} />
-                Password updated successfully
-              </div>
-            )}
-            {passwordError && (
-              <div className="flex items-center gap-2 text-red-600 text-sm font-bold">
-                <XCircle size={16} />
-                {passwordError}
-              </div>
-            )}
-          </form>
+    <div className="space-y-8 pb-10">
+      <div className="flex justify-between items-end">
+        <div>
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase italic">Vendor Settings</h2>
+          <p className="text-slate-500 font-medium">Manage your global trade identity and security</p>
         </div>
       </div>
+
+      <form onSubmit={handleProfileUpdate} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          
+          {/* Section 1: Business Identity */}
+          <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm">
+            <div className="flex items-center gap-3 mb-8 border-b border-slate-50 pb-5">
+              <Building2 size={22} className="text-emerald-600" />
+              <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Company Identity</h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2 flex items-center gap-6 p-6 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-100 mb-4">
+                <div className="w-24 h-24 bg-white rounded-2xl border flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                  {previews.logo ? (
+                    <img src={previews.logo} alt="Logo" className="w-full h-full object-cover" />
+                  ) : (
+                    <ImageIcon className="text-slate-300" size={32} />
+                  )}
+                </div>
+                <div>
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Company Logo</h4>
+                  <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={(e) => handleFileChange(e, "logo")} />
+                  <button type="button" onClick={() => fileInputRef.current.click()} className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-slate-200 font-bold text-xs hover:bg-emerald-50 transition-all">
+                    <Upload size={14} /> Update Logo
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Contact Person</label>
+                <input type="text" value={userData.name} onChange={(e) => setUserData({...userData, name: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Legal Company Name</label>
+                <input type="text" value={userData.companyName} onChange={(e) => setUserData({...userData, companyName: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Reg Number</label>
+                <input type="text" value={vendorProfile.businessRegNumber} onChange={(e) => setVendorProfile({...vendorProfile, businessRegNumber: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Industry</label>
+                <select value={vendorProfile.industry} onChange={(e) => setVendorProfile({...vendorProfile, industry: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold">
+                   <option value="Electronics">Electronics</option>
+                   <option value="Textiles">Textiles</option>
+                   <option value="Chemicals">Chemicals</option>
+                   <option value="Food/Agri">Agriculture</option>
+                   <option value="Construction">Construction</option>
+                </select>
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Business Description</label>
+                <textarea rows="3" value={vendorProfile.description} onChange={(e) => setVendorProfile({...vendorProfile, description: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Contact & Banking */}
+          <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm">
+            <div className="flex items-center gap-3 mb-8 border-b border-slate-50 pb-5">
+              <Landmark size={22} className="text-emerald-600" />
+              <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Legal & Financials</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Tax ID / TIN</label>
+                <input type="text" value={vendorProfile.taxId} onChange={(e) => setVendorProfile({...vendorProfile, taxId: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Business License</label>
+                <div onClick={() => licenseInputRef.current.click()} className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 flex items-center justify-between cursor-pointer hover:border-emerald-400 transition-all">
+                  <span className="text-[10px] font-black text-slate-400 truncate uppercase">
+                    {files.license ? files.license.name : (vendorProfile.businessLicenseUrl ? "View Existing" : "Update License")}
+                  </span>
+                  <FileText size={18} className="text-slate-400" />
+                </div>
+                <input type="file" className="hidden" ref={licenseInputRef} onChange={(e) => handleFileChange(e, "license")} />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Bank Name</label>
+                <input type="text" value={vendorProfile.bankDetails.bankName} onChange={(e) => setVendorProfile({...vendorProfile, bankDetails: {...vendorProfile.bankDetails, bankName: e.target.value}})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Account Number</label>
+                <input type="text" value={vendorProfile.bankDetails.accountNumber} onChange={(e) => setVendorProfile({...vendorProfile, bankDetails: {...vendorProfile.bankDetails, accountNumber: e.target.value}})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Account Name</label>
+                <input type="text" value={vendorProfile.bankDetails.accountName} onChange={(e) => setVendorProfile({...vendorProfile, bankDetails: {...vendorProfile.bankDetails, accountName: e.target.value}})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">SWIFT Code</label>
+                <input type="text" value={vendorProfile.bankDetails.swiftCode} onChange={(e) => setVendorProfile({...vendorProfile, bankDetails: {...vendorProfile.bankDetails, swiftCode: e.target.value}})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Actions & Security */}
+        <div className="space-y-8">
+          <div className="bg-slate-900 text-white rounded-[2.5rem] p-8 shadow-xl">
+            <h3 className="text-lg font-black uppercase tracking-tighter mb-6 flex items-center gap-2">
+              <Save size={20} className="text-emerald-400" /> Save Profile
+            </h3>
+            <p className="text-slate-400 text-xs font-bold mb-6 italic">Ensure all trade information is accurate for compliance.</p>
+            <button type="submit" disabled={loading} className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-900 rounded-2xl font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2">
+              {loading ? <Loader2 className="animate-spin" size={18} /> : (saved ? "Saved" : "Apply Updates")}
+            </button>
+            {error && <p className="text-red-400 text-[10px] font-black mt-4 uppercase tracking-widest">{error}</p>}
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm">
+            <h3 className="text-lg font-black text-slate-900 uppercase tracking-tighter mb-6 flex items-center gap-2">
+              <Lock size={20} className="text-blue-600" /> Password
+            </h3>
+            <div className="space-y-4">
+              <input type="password" placeholder="Current Password" value={passwordData.currentPassword} onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" />
+              <input type="password" placeholder="New Password" value={passwordData.newPassword} onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" />
+              <input type="password" placeholder="Confirm New" value={passwordData.confirmPassword} onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" />
+              <button type="button" onClick={handlePasswordUpdate} disabled={passwordLoading} className="w-full py-4 bg-slate-100 text-slate-900 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-50 transition-all">
+                {passwordLoading ? "Wait..." : "Change Password"}
+              </button>
+              {passwordSaved && <p className="text-emerald-600 text-center text-[10px] font-black uppercase tracking-widest">Success!</p>}
+              {passwordError && <p className="text-red-600 text-center text-[10px] font-black uppercase tracking-widest">{passwordError}</p>}
+            </div>
+          </div>
+        </div>
+      </form>
     </div>
   );
 }
