@@ -7,7 +7,6 @@ export const createOrder = async (req, res) => {
     const { productId, quantity, unitPrice, shippingAddress } = req.body;
     const buyerId = req.user.id;
 
-    // Find product and ensure vendor info is available
     const product = await Product.findById(productId);
     if (!product) return res.status(404).json({ message: 'Product not found' });
 
@@ -15,7 +14,7 @@ export const createOrder = async (req, res) => {
 
     const order = new Order({
       buyer: buyerId,
-      vendor: product.vendor, // Assuming product.vendor stores the ID
+      vendor: product.vendor, 
       product: productId,
       quantity: Number(quantity),
       unitPrice: Number(unitPrice),
@@ -60,6 +59,7 @@ export const getVendorOrders = async (req, res) => {
 // Get Buyer Orders
 export const getBuyerOrders = async (req, res) => {
   try {
+    // Logic: Find orders where buyer field matches logged in user ID
     const orders = await Order.find({ buyer: req.user.id })
       .populate('product', 'name category images')
       .populate('vendor', 'name companyName')
@@ -74,18 +74,20 @@ export const getBuyerOrders = async (req, res) => {
 export const updateOrderStatus = async (req, res) => {
   try {
     const { status, trackingNumber, carrier, estimatedDelivery } = req.body;
+    // Ensure only the assigned vendor can update this order
     const order = await Order.findOne({ _id: req.params.id, vendor: req.user.id });
     
-    if (!order) return res.status(404).json({ message: 'Order not found' });
+    if (!order) return res.status(404).json({ message: 'Order not found or unauthorized' });
 
-    order.status = status || order.status;
+    if (status) order.status = status;
     if (trackingNumber) order.trackingNumber = trackingNumber;
     if (carrier) order.carrier = carrier;
     if (estimatedDelivery) order.estimatedDelivery = estimatedDelivery;
 
     await order.save();
+    
     const populatedOrder = await Order.findById(order._id)
-      .populate('product', 'name category')
+      .populate('product', 'name category images')
       .populate('buyer', 'name email')
       .populate('vendor', 'name companyName');
 
@@ -105,7 +107,12 @@ export const getOrderById = async (req, res) => {
 
     if (!order) return res.status(404).json({ message: 'Order not found' });
 
-    if (order.buyer._id.toString() !== req.user.id && order.vendor._id.toString() !== req.user.id) {
+    // Auth check: Is the requester the buyer, the vendor, or an admin?
+    const isBuyer = order.buyer._id.toString() === req.user.id;
+    const isVendor = order.vendor._id.toString() === req.user.id;
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isBuyer && !isVendor && !isAdmin) {
       return res.status(403).json({ message: 'Access denied' });
     }
 

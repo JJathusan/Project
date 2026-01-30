@@ -2,35 +2,31 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
 import { verifyAdmin } from '../middleware/roles.js';
+import { verifyToken } from '../middleware/auth.js'; // ADDED THIS
 
 const router = express.Router();
 
 // Create new user (Admin only)
-router.post('/users', verifyAdmin, async (req, res) => {
+router.post('/users', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { name, email, password, role, companyName } = req.body;
 
-    // Validate required fields
     if (!name || !email || !password || !role) {
       return res.status(400).json({ message: 'Name, email, password, and role are required' });
     }
 
-    // Validate role
     if (!['buyer', 'vendor', 'admin'].includes(role)) {
       return res.status(400).json({ message: "Invalid role. Must be 'buyer', 'vendor', or 'admin'" });
     }
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User with this email already exists' });
     }
 
-    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create new user
     const newUser = new User({
       name,
       email,
@@ -41,7 +37,6 @@ router.post('/users', verifyAdmin, async (req, res) => {
 
     await newUser.save();
 
-    // Return user without password
     const userResponse = await User.findById(newUser._id).select('-password');
 
     res.status(201).json({
@@ -54,7 +49,7 @@ router.post('/users', verifyAdmin, async (req, res) => {
 });
 
 // Get all users (vendors and buyers)
-router.get('/users', verifyAdmin, async (req, res) => {
+router.get('/users', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const users = await User.find().select('-password').sort({ createdAt: -1 });
     res.json(users);
@@ -64,7 +59,7 @@ router.get('/users', verifyAdmin, async (req, res) => {
 });
 
 // Get users by role
-router.get('/users/:role', verifyAdmin, async (req, res) => {
+router.get('/users/:role', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { role } = req.params;
     if (!['buyer', 'vendor', 'admin'].includes(role)) {
@@ -78,7 +73,7 @@ router.get('/users/:role', verifyAdmin, async (req, res) => {
 });
 
 // Get single user by ID
-router.get('/users/id/:id', verifyAdmin, async (req, res) => {
+router.get('/users/id/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password');
     if (!user) return res.status(404).json({ message: 'User not found' });
@@ -89,7 +84,7 @@ router.get('/users/id/:id', verifyAdmin, async (req, res) => {
 });
 
 // Update user
-router.patch('/users/:id', verifyAdmin, async (req, res) => {
+router.patch('/users/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { name, email, companyName, role } = req.body;
     const updateData = {};
@@ -99,7 +94,6 @@ router.patch('/users/:id', verifyAdmin, async (req, res) => {
     if (companyName !== undefined) updateData.companyName = companyName;
     if (role && ['buyer', 'vendor', 'admin'].includes(role)) updateData.role = role;
 
-    // Check if email is being changed and if it's already taken
     if (email) {
       const existingUser = await User.findOne({ email, _id: { $ne: req.params.id } });
       if (existingUser) {
@@ -125,7 +119,7 @@ router.patch('/users/:id', verifyAdmin, async (req, res) => {
 });
 
 // Delete user
-router.delete('/users/:id', verifyAdmin, async (req, res) => {
+router.delete('/users/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
@@ -136,7 +130,7 @@ router.delete('/users/:id', verifyAdmin, async (req, res) => {
 });
 
 // Get statistics
-router.get('/stats', verifyAdmin, async (req, res) => {
+router.get('/stats', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
     const totalVendors = await User.countDocuments({ role: 'vendor' });

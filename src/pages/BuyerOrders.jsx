@@ -12,6 +12,7 @@ export default function BuyerOrders() {
   const [sortBy, setSortBy] = useState("newest");
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [showSortModal, setShowSortModal] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchOrders();
@@ -19,14 +20,19 @@ export default function BuyerOrders() {
 
   const fetchOrders = async () => {
     const token = localStorage.getItem("token");
-    if (!token) return;
+    if (!token) {
+      setLoading(false);
+      return;
+    }
     try {
+      setError(null);
       const res = await axios.get("http://localhost:5000/api/orders/buyer", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setOrders(res.data);
     } catch (err) {
       console.error("Failed to fetch orders:", err);
+      setError(err.response?.data?.message || "Failed to load orders");
     } finally {
       setLoading(false);
     }
@@ -42,7 +48,6 @@ export default function BuyerOrders() {
   };
 
   const filteredOrders = orders.filter(o => {
-    // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       const vendorName = o.vendor?.name || "";
@@ -54,24 +59,15 @@ export default function BuyerOrders() {
         return false;
       }
     }
-
-    // Status filter
     if (statusFilter !== "all" && o.status !== statusFilter) {
       return false;
     }
-
     return true;
   }).sort((a, b) => {
-    // Sort functionality
-    if (sortBy === "newest") {
-      return new Date(b.createdAt) - new Date(a.createdAt);
-    } else if (sortBy === "oldest") {
-      return new Date(a.createdAt) - new Date(b.createdAt);
-    } else if (sortBy === "price-high") {
-      return (b.totalPrice || 0) - (a.totalPrice || 0);
-    } else if (sortBy === "price-low") {
-      return (a.totalPrice || 0) - (b.totalPrice || 0);
-    }
+    if (sortBy === "newest") return new Date(b.createdAt) - new Date(a.createdAt);
+    if (sortBy === "oldest") return new Date(a.createdAt) - new Date(b.createdAt);
+    if (sortBy === "price-high") return (b.totalPrice || 0) - (a.totalPrice || 0);
+    if (sortBy === "price-low") return (a.totalPrice || 0) - (b.totalPrice || 0);
     return 0;
   });
 
@@ -105,6 +101,11 @@ export default function BuyerOrders() {
           <Loader2 className="animate-spin mb-4" size={40} />
           <p className="font-bold uppercase text-xs tracking-widest">Loading Orders...</p>
         </div>
+      ) : error ? (
+        <div className="bg-red-50 border border-red-100 p-8 rounded-[2.5rem] text-center">
+          <p className="text-red-600 font-black uppercase text-sm tracking-widest">{error}</p>
+          <p className="text-red-400 text-xs mt-2 font-medium">Please ensure you are logged in as a Buyer.</p>
+        </div>
       ) : (
         <>
           <div className="grid gap-6">
@@ -118,12 +119,13 @@ export default function BuyerOrders() {
                       <Calendar size={14} /> {formatDate(order.createdAt)}
                     </div>
                   </div>
-                  <span className={`px-4 py-2 rounded-xl border font-black text-[10px] uppercase ${order.status === "delivered" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
+                  <span className={`px-4 py-2 rounded-xl border font-black text-[10px] uppercase ${
+                      order.status === "delivered" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
                       order.status === "shipped" ? "bg-blue-50 text-blue-600 border-blue-100" :
-                        order.status === "cancelled" ? "bg-red-50 text-red-600 border-red-100" :
-                          "bg-slate-50 text-slate-600 border-slate-100"
+                      order.status === "cancelled" ? "bg-red-50 text-red-600 border-red-100" :
+                      "bg-slate-50 text-slate-600 border-slate-100"
                     }`}>
-                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    {order.status}
                   </span>
                 </div>
                 <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -184,14 +186,11 @@ export default function BuyerOrders() {
         </>
       )}
 
-      {/* Filter Modal */}
+      {/* Modals remain the same logic... */}
       {showFilterModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl relative">
-            <button
-              onClick={() => setShowFilterModal(false)}
-              className="absolute top-6 right-6 text-slate-400 hover:text-slate-900"
-            >
+            <button onClick={() => setShowFilterModal(false)} className="absolute top-6 right-6 text-slate-400 hover:text-slate-900">
               <X size={24} />
             </button>
             <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight mb-6">Filter Orders</h3>
@@ -199,14 +198,8 @@ export default function BuyerOrders() {
               {["all", "pending", "confirmed", "processing", "shipped", "delivered", "cancelled"].map((status) => (
                 <button
                   key={status}
-                  onClick={() => {
-                    setStatusFilter(status);
-                    setShowFilterModal(false);
-                  }}
-                  className={`w-full text-left px-4 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all ${statusFilter === status
-                      ? "bg-blue-600 text-white"
-                      : "bg-slate-50 text-slate-600 hover:bg-slate-100"
-                    }`}
+                  onClick={() => { setStatusFilter(status); setShowFilterModal(false); }}
+                  className={`w-full text-left px-4 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all ${statusFilter === status ? "bg-blue-600 text-white" : "bg-slate-50 text-slate-600 hover:bg-slate-100"}`}
                 >
                   {status === "all" ? "All Orders" : status.charAt(0).toUpperCase() + status.slice(1)}
                 </button>
@@ -216,14 +209,10 @@ export default function BuyerOrders() {
         </div>
       )}
 
-      {/* Sort Modal */}
       {showSortModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl relative">
-            <button
-              onClick={() => setShowSortModal(false)}
-              className="absolute top-6 right-6 text-slate-400 hover:text-slate-900"
-            >
+            <button onClick={() => setShowSortModal(false)} className="absolute top-6 right-6 text-slate-400 hover:text-slate-900">
               <X size={24} />
             </button>
             <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight mb-6">Sort Orders</h3>
@@ -236,14 +225,8 @@ export default function BuyerOrders() {
               ].map((option) => (
                 <button
                   key={option.value}
-                  onClick={() => {
-                    setSortBy(option.value);
-                    setShowSortModal(false);
-                  }}
-                  className={`w-full text-left px-4 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all ${sortBy === option.value
-                      ? "bg-blue-600 text-white"
-                      : "bg-slate-50 text-slate-600 hover:bg-slate-100"
-                    }`}
+                  onClick={() => { setSortBy(option.value); setShowSortModal(false); }}
+                  className={`w-full text-left px-4 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all ${sortBy === option.value ? "bg-blue-600 text-white" : "bg-slate-50 text-slate-600 hover:bg-slate-100"}`}
                 >
                   {option.label}
                 </button>
