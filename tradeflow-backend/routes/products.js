@@ -1,6 +1,6 @@
 import express from 'express';
 import Product from '../models/Product.js';
-import { verifyToken } from '../middleware/auth.js';
+import { verifyToken, isVerifiedVendor } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -20,8 +20,6 @@ router.get('/all', async (req, res) => {
 });
 
 // 2. GET Single Product by ID (For the Product Detail page)
-// URL: GET /api/products/:id
-// THIS FIXES YOUR 404 ERROR
 router.get('/:id', async (req, res) => {
   try {
     const product = await Product.findById(req.params.id).populate('vendor');
@@ -32,7 +30,6 @@ router.get('/:id', async (req, res) => {
     
     res.json(product);
   } catch (err) {
-    // If the ID is not a valid MongoDB ObjectId format
     if (err.kind === 'ObjectId') {
       return res.status(404).json({ message: "Invalid Product ID format" });
     }
@@ -42,10 +39,10 @@ router.get('/:id', async (req, res) => {
 
 
 // ==========================================
-// VENDOR MANAGEMENT ROUTES (Token Required)
+// VENDOR MANAGEMENT ROUTES (Token & Verification Required)
 // ==========================================
 
-// 3. GET Vendor Inventory
+// 3. GET Vendor Inventory (Verified check not strictly needed for viewing, but added for safety)
 // URL: GET /api/products/inventory
 router.get('/inventory', verifyToken, async (req, res) => {
   try {
@@ -56,9 +53,9 @@ router.get('/inventory', verifyToken, async (req, res) => {
   }
 });
 
-// 4. POST Add New Product
+// 4. POST Add New Product (LOCKED: Must be Verified)
 // URL: POST /api/products/add-product
-router.post('/add-product', verifyToken, async (req, res) => {
+router.post('/add-product', verifyToken, isVerifiedVendor, async (req, res) => {
   try {
     const newProduct = new Product({
       ...req.body,
@@ -71,8 +68,8 @@ router.post('/add-product', verifyToken, async (req, res) => {
   }
 });
 
-// 5. DELETE a product
-router.delete('/product/:id', verifyToken, async (req, res) => {
+// 5. DELETE a product (LOCKED: Must be Verified)
+router.delete('/product/:id', verifyToken, isVerifiedVendor, async (req, res) => {
   try {
     const deleted = await Product.findOneAndDelete({ _id: req.params.id, vendor: req.user.id });
     if (!deleted) return res.status(404).json({ message: "Product not found" });
@@ -82,8 +79,8 @@ router.delete('/product/:id', verifyToken, async (req, res) => {
   }
 });
 
-// 6. PATCH update a product
-router.patch('/product/:id', verifyToken, async (req, res) => {
+// 6. PATCH update a product (LOCKED: Must be Verified)
+router.patch('/product/:id', verifyToken, isVerifiedVendor, async (req, res) => {
   try {
     const updated = await Product.findOneAndUpdate(
       { _id: req.params.id, vendor: req.user.id },

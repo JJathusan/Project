@@ -41,6 +41,7 @@ router.post('/signup', async (req, res) => {
   }
 });
 
+
 // 2. LOGIN (Fixed to find user correctly and check profile status)
 router.post('/login', async (req, res) => {
   try {

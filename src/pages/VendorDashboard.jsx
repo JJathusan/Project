@@ -6,16 +6,26 @@ import { useNavigate } from "react-router-dom";
 export default function VendorDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [vendorStatus, setVendorStatus] = useState("pending"); 
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
         const token = localStorage.getItem("token");
-        // FIXED URL: Using /api/vendors/stats (plural) to match backend routes
         const res = await axios.get("http://localhost:5000/api/vendors/stats", {
           headers: { Authorization: `Bearer ${token}` }
         });
+        
         setData(res.data);
+
+        // FIX: Change 'res.data.status' to 'res.data.vendorStatus' 
+        // to match your vendorController logic
+        const currentStatus = res.data.vendorStatus || "pending";
+        setVendorStatus(currentStatus);
+        
+        // Optional: Keep localStorage in sync
+        localStorage.setItem("vendorStatus", currentStatus);
+
       } catch (err) {
         console.error("Failed to fetch stats", err);
       } finally {
@@ -36,10 +46,34 @@ export default function VendorDashboard() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-3xl font-black text-slate-900 tracking-tight">Vendor Console</h2>
-        <p className="text-slate-500 font-medium">Welcome back, {localStorage.getItem("userName")}</p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Vendor Console</h2>
+          <p className="text-slate-500 font-medium">Welcome back, {localStorage.getItem("userName")}</p>
+        </div>
+
+        {/* STATUS BADGE */}
+        <div className={`px-4 py-2 rounded-2xl font-black uppercase text-xs tracking-widest border-2 ${
+          vendorStatus === 'verified' 
+            ? "bg-emerald-50 border-emerald-100 text-emerald-600" 
+            : "bg-amber-50 border-amber-100 text-amber-600 animate-pulse"
+        }`}>
+          {vendorStatus === 'verified' ? "✓ Verified Vendor" : "⌛ Verification Pending"}
+        </div>
       </div>
+
+      {/* WARNING BANNER FOR UNVERIFIED VENDORS */}
+      {vendorStatus !== 'verified' && (
+        <div className="bg-slate-900 text-white p-6 rounded-3xl flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <AlertCircle className="text-amber-400" size={24} />
+            <div>
+              <p className="font-black uppercase text-sm tracking-wide">Account Under Review</p>
+              <p className="text-xs opacity-70">You can browse the dashboard, but product uploads are locked until Admin verification.</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -56,16 +90,13 @@ export default function VendorDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Recent RFQs Component */}
         <RecentRFQs />
 
-        {/* Dynamic Inventory Health Section */}
         <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
           <h3 className="font-bold text-slate-900 mb-6 flex items-center gap-2">
             <AlertCircle size={18} className="text-orange-500"/> Inventory Health
           </h3>
           <div className="space-y-6">
-            {/* Safe Mapping with Fallback to Empty Array */}
             {(data?.inventoryHealth || []).map((item, idx) => (
               <div key={item.id || `inv-${idx}`}>
                 <div className="flex justify-between text-xs font-bold mb-2 uppercase">
@@ -91,6 +122,8 @@ export default function VendorDashboard() {
     </div>
   );
 }
+
+// ... RecentRFQs function remains the same ...
 
 function RecentRFQs() {
   const [rfqs, setRfqs] = useState([]);

@@ -24,7 +24,6 @@ export default function VendorAuth() {
         role: "vendor" 
       });
 
-      // If Signup was successful but not a login
       if (!isLogin) {
         alert("Registration successful! Please login.");
         setIsLogin(true);
@@ -32,25 +31,28 @@ export default function VendorAuth() {
         return;
       }
 
-      // LOGIN LOGIC
       if (res.data.token) {
         localStorage.clear(); 
-
         const { token, user } = res.data;
 
         localStorage.setItem("token", token);
         localStorage.setItem("userRole", user.role);
         localStorage.setItem("userName", user.name);
-        localStorage.setItem("tempCompanyName", formData.companyName || user.companyName || "");
         
-        // Store the status from backend
+        // FIX: Use backend company name first. Fallback to formData only if it's a new signup.
+        const finalCompanyName = user.companyName && user.companyName !== "Not set" 
+          ? user.companyName 
+          : (formData.companyName || "Not set");
+
+        localStorage.setItem("companyName", finalCompanyName);
+        
         const isSetupDone = user.isProfileSetup === true;
         localStorage.setItem("isProfileSetup", isSetupDone ? "true" : "false");
 
         if (isSetupDone) {
           navigate("/vendor/dashboard");
         } else {
-          // Verify this matches your App.js route path!
+          localStorage.setItem("tempCompanyName", formData.companyName || user.companyName || "");
           navigate("/vendor-setup"); 
         }
       }
@@ -65,7 +67,6 @@ export default function VendorAuth() {
   return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6">
       <div className="max-w-4xl w-full grid md:grid-cols-2 bg-white rounded-[2.5rem] overflow-hidden shadow-2xl">
-        {/* Left Side: Brand */}
         <div className="bg-emerald-600 p-12 text-white flex flex-col justify-between">
           <div>
             <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center mb-6">
@@ -79,7 +80,6 @@ export default function VendorAuth() {
           </div>
         </div>
 
-        {/* Right Side: Form */}
         <div className="p-12">
           <h3 className="text-2xl font-black text-slate-900 mb-8 uppercase tracking-tight">
             {isLogin ? "Sign In" : "Register Company"}

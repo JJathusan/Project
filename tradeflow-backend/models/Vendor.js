@@ -6,7 +6,7 @@ const VendorSchema = new mongoose.Schema({
   // 1. Company Profile
   companyName: { type: String, required: true },
   businessRegNumber: { type: String },
-  logo: { type: String }, // URL to image
+  logo: { type: String }, 
   industry: { type: String },
   description: { type: String },
   yearsInBusiness: { type: Number },
@@ -29,7 +29,14 @@ const VendorSchema = new mongoose.Schema({
   },
   certifications: [String],
 
-  // 7. Trust & Performance (Managed by system)
+  // NEW: Verification Status
+  status: { 
+    type: String, 
+    enum: ['pending', 'verified', 'rejected'], 
+    default: 'pending' 
+  },
+
+  // 7. Trust & Performance
   rating: { type: Number, default: 0 },
   responseTime: { type: String, default: "Within 24 hours" },
   fulfillmentRate: { type: Number, default: 100 }

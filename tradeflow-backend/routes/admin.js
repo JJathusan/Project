@@ -1,3 +1,4 @@
+import Vendor from '../models/Vendor.js';
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
@@ -143,6 +144,30 @@ router.get('/stats', verifyToken, verifyAdmin, async (req, res) => {
       totalBuyers,
       totalAdmins
     });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.patch('/verify-vendor/:id', verifyToken, verifyAdmin, async (req, res) => {
+  try {
+    const updatedVendor = await Vendor.findOneAndUpdate(
+      { user: req.params.id }, // ID passed is the User ID
+      { status: 'verified' },
+      { new: true }
+    );
+    if (!updatedVendor) return res.status(404).json({ message: "Vendor profile not found" });
+    res.json({ message: "Vendor verified successfully", vendor: updatedVendor });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// NEW: Get all Pending Vendors
+router.get('/vendors/pending', verifyToken, verifyAdmin, async (req, res) => {
+  try {
+    const pendingVendors = await Vendor.find({ status: 'pending' }).populate('user', 'name email');
+    res.json(pendingVendors);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

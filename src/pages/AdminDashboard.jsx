@@ -12,9 +12,11 @@ export default function AdminDashboard() {
     totalAdmins: 0
   });
   const [loading, setLoading] = useState(true);
+  const [pendingVendors, setPendingVendors] = useState([]); // Added state
 
   useEffect(() => {
     fetchStats();
+    fetchPendingVendors(); // Added call
   }, []);
 
   const fetchStats = async () => {
@@ -33,6 +35,32 @@ export default function AdminDashboard() {
       console.error("Failed to fetch stats:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPendingVendors = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.get("http://localhost:5000/api/admin/vendors/pending", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPendingVendors(res.data);
+    } catch (err) {
+      console.error("Error fetching pending vendors", err);
+    }
+  };
+
+  const handleVerify = async (userId) => {
+    const token = localStorage.getItem("token");
+    try {
+      await axios.patch(`http://localhost:5000/api/admin/verify-vendor/${userId}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // Refresh list and stats
+      fetchPendingVendors();
+      fetchStats();
+    } catch (err) {
+      alert("Verification failed: " + (err.response?.data?.message || err.message));
     }
   };
 
@@ -110,6 +138,34 @@ export default function AdminDashboard() {
             <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">{card.title}</p>
           </button>
         ))}
+      </div>
+
+      {/* PENDING VERIFICATIONS SECTION */}
+      <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
+        <h3 className="text-xl font-black text-slate-900 mb-6 uppercase flex items-center gap-2">
+          <Shield size={20} className="text-amber-500" /> Pending Verifications
+        </h3>
+
+        {pendingVendors.length === 0 ? (
+          <p className="text-sm text-slate-400 font-bold italic">No vendors currently awaiting verification.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {pendingVendors.map((vendor) => (
+              <div key={vendor._id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <div>
+                  <p className="font-black text-slate-900">{vendor.companyName}</p>
+                  <p className="text-xs text-slate-500">{vendor.user?.email || "No email"}</p>
+                </div>
+                <button 
+                  onClick={() => handleVerify(vendor.user?._id)}
+                  className="px-4 py-2 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-700 transition-all shadow-sm shadow-emerald-200"
+                >
+                  Approve Vendor
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">

@@ -2,46 +2,48 @@ import Vendor from '../models/Vendor.js';
 import User from '../models/User.js';
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
-import Quote from '../models/Quote.js'; // Added Quote import
+import Quote from '../models/Quote.js';
 
 /**
- * @desc Get Vendor Dashboard Stats
- * @route GET /api/vendors/stats
+ * @desc Get Vendor Dashboard Stats & Status
  */
 export const getVendorStats = async (req, res) => {
   try {
-    const vendorId = req.user.id;
+    const userId = req.user.id;
 
+    // FIX: Fetch the vendor profile to get the current status (verified/pending)
+    const vendorProfile = await Vendor.findOne({ user: userId });
+    
     // 1. Get Products for Inventory Health
-    const products = await Product.find({ vendor: vendorId });
+    const products = await Product.find({ vendor: userId });
     const inventoryHealth = products.map(p => ({
-      id: p._id, // Adding ID for frontend keys
+      id: p._id,
       name: p.name,
       health: p.stockValue || 100,
       status: p.status
     }));
 
-    // 2. Calculate Revenue (Only from confirmed/delivered orders)
+    // 2. Calculate Revenue
     const orders = await Order.find({ 
-      vendor: vendorId,
+      vendor: userId,
       status: { $in: ['confirmed', 'processing', 'shipped', 'delivered'] }
     });
     const totalRevenue = orders.reduce((sum, order) => sum + (order.totalPrice || 0), 0);
 
     // 3. Count Quotes & RFQs
     const activeQuotes = await Quote.countDocuments({ 
-      vendor: vendorId,
+      vendor: userId,
       status: { $in: ['quoted', 'negotiating'] }
     });
 
     const newRFQs = await Quote.countDocuments({ 
-      vendor: vendorId,
+      vendor: userId,
       status: 'pending'
     });
 
     // 4. Count Pending Shipments
     const pendingShipments = await Order.countDocuments({ 
-      vendor: vendorId,
+      vendor: userId,
       status: { $in: ['confirmed', 'processing', 'shipped'] }
     });
 
@@ -51,7 +53,9 @@ export const getVendorStats = async (req, res) => {
       pendingShipments,
       newRFQs,
       inventoryHealth,
-      totalOrders: orders.length // Included for extra dashboard info
+      totalOrders: orders.length,
+      // FIX: Include the status so the frontend knows verification is complete
+      vendorStatus: vendorProfile ? vendorProfile.status : 'pending' 
     });
   } catch (err) {
     console.error("Stats Fetch Error:", err);

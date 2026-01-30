@@ -1,7 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import { verifyVendorOrAdmin } from '../middleware/roles.js';
-import { verifyToken } from '../middleware/auth.js';
+import { verifyToken, isVerifiedVendor } from '../middleware/auth.js'; // FIX: Imported isVerifiedVendor
 import { setupVendorProfile, getVendorStats } from '../controllers/vendorController.js';
 import Product from '../models/Product.js';
 import Vendor from '../models/Vendor.js';
@@ -27,8 +27,8 @@ router.post('/setup', verifyToken, verifyVendorOrAdmin, upload.fields([
 
 // --- 4. Inventory Management ---
 
-// GET Full Inventory
-router.get('/inventory', verifyToken, verifyVendorOrAdmin, async (req, res) => {
+// GET Full Inventory - FIX: Added isVerifiedVendor
+router.get('/inventory', verifyToken, verifyVendorOrAdmin, isVerifiedVendor, async (req, res) => {
   try {
     const products = await Product.find({ vendor: req.user.id }).sort({ createdAt: -1 });
     res.json(products);
@@ -37,8 +37,8 @@ router.get('/inventory', verifyToken, verifyVendorOrAdmin, async (req, res) => {
   }
 });
 
-// POST Add Product
-router.post('/add-product', verifyToken, verifyVendorOrAdmin, upload.array('images', 5), async (req, res) => {
+// POST Add Product - FIX: Added isVerifiedVendor
+router.post('/add-product', verifyToken, verifyVendorOrAdmin, isVerifiedVendor, upload.array('images', 5), async (req, res) => {
   try {
     const { name, category, price, moq, specifications, ...rest } = req.body;
 
@@ -70,8 +70,8 @@ router.post('/add-product', verifyToken, verifyVendorOrAdmin, upload.array('imag
   }
 });
 
-// DELETE Product
-router.delete('/product/:id', verifyToken, verifyVendorOrAdmin, async (req, res) => {
+// DELETE Product - FIX: Added isVerifiedVendor
+router.delete('/product/:id', verifyToken, verifyVendorOrAdmin, isVerifiedVendor, async (req, res) => {
   try {
     const deleted = await Product.findOneAndDelete({ _id: req.params.id, vendor: req.user.id });
     if (!deleted) return res.status(404).json({ message: "Product not found or unauthorized" });
