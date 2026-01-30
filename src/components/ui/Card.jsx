@@ -5,6 +5,9 @@ import { ArrowUpRight, Package, Info } from "lucide-react";
 export default function Card({ product }) {
   const navigate = useNavigate();
 
+  // THE FIX: Define the Backend Base URL
+  const BACKEND_URL = "http://localhost:5000";
+
   // Redirect to the dynamic detail page using the MongoDB _id
   const handleCardClick = () => {
     if (product._id) {
@@ -12,6 +15,16 @@ export default function Card({ product }) {
     } else {
       console.error("Product ID is missing", product);
     }
+  };
+
+  // Helper function to format image URL
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    // If it's already a full URL (like from a CDN), return it
+    if (imagePath.startsWith('http')) return imagePath;
+    // If it starts with a slash, don't add another one
+    const path = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+    return `${BACKEND_URL}${path}`;
   };
 
   return (
@@ -23,9 +36,14 @@ export default function Card({ product }) {
       <div className="h-48 bg-slate-50 flex items-center justify-center border-b border-slate-100 relative overflow-hidden">
         {product.images?.[0] ? (
           <img 
-            src={product.images[0]} 
+            src={getImageUrl(product.images[0])} 
             alt={product.name} 
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+            // If the backend fails to serve the image, show a placeholder
+            onError={(e) => {
+              e.target.onerror = null; 
+              e.target.src="https://via.placeholder.com/400x300?text=Image+Not+Found";
+            }}
           />
         ) : (
           <div className="flex flex-col items-center text-slate-300">
