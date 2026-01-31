@@ -11,7 +11,7 @@ export const getVendorStats = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // FIX: Fetch the vendor profile to get the current status (verified/pending)
+    // FIX: Fetch the vendor profile to get the current status (verified/pending/rejected)
     const vendorProfile = await Vendor.findOne({ user: userId });
     
     // 1. Get Products for Inventory Health
@@ -95,6 +95,7 @@ export const setupVendorProfile = async (req, res) => {
       { new: true, upsert: true } 
     );
 
+    // After setup, the profile exists but status remains 'pending' until admin approval
     await User.findByIdAndUpdate(userId, { isProfileSetup: true });
 
     res.status(201).json({ success: true, vendor });

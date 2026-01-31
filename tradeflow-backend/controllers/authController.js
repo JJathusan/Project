@@ -30,6 +30,10 @@ export const login = async (req, res) => {
       { expiresIn: '1d' }
     );
 
+    // FIX: A profile is only considered "Setup" if it exists AND is 'verified'.
+    // If status is 'pending' or 'rejected', isProfileSetup will be false.
+    const isProfileSetup = !!vendorProfile && vendorProfile.status === 'verified';
+
     // 5. Return user data with companyName and setup flag
     res.json({
       token,
@@ -39,8 +43,7 @@ export const login = async (req, res) => {
         email: user.email,
         role: user.role,
         companyName: user.companyName || "Not set",
-        // true if vendorProfile exists AND is fully setup
-        isProfileSetup: !!vendorProfile && vendorProfile.status !== 'pending'
+        isProfileSetup: isProfileSetup
       }
     });
 

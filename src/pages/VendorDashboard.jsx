@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { TrendingUp, Package, MessageSquareQuote, Users, AlertCircle, FileText } from "lucide-react";
+import { TrendingUp, Package, MessageSquareQuote, Users, AlertCircle, FileText, XCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function VendorDashboard() {
@@ -18,12 +18,10 @@ export default function VendorDashboard() {
         
         setData(res.data);
 
-        // FIX: Change 'res.data.status' to 'res.data.vendorStatus' 
-        // to match your vendorController logic
+        // This matches the 'vendorStatus' field we added to the controller
         const currentStatus = res.data.vendorStatus || "pending";
         setVendorStatus(currentStatus);
         
-        // Optional: Keep localStorage in sync
         localStorage.setItem("vendorStatus", currentStatus);
 
       } catch (err) {
@@ -52,18 +50,41 @@ export default function VendorDashboard() {
           <p className="text-slate-500 font-medium">Welcome back, {localStorage.getItem("userName")}</p>
         </div>
 
-        {/* STATUS BADGE */}
+        {/* --- DYNAMIC STATUS BADGE --- */}
         <div className={`px-4 py-2 rounded-2xl font-black uppercase text-xs tracking-widest border-2 ${
           vendorStatus === 'verified' 
             ? "bg-emerald-50 border-emerald-100 text-emerald-600" 
+            : vendorStatus === 'rejected'
+            ? "bg-red-50 border-red-100 text-red-600"
             : "bg-amber-50 border-amber-100 text-amber-600 animate-pulse"
         }`}>
-          {vendorStatus === 'verified' ? "✓ Verified Vendor" : "⌛ Verification Pending"}
+          {vendorStatus === 'verified' && "✓ Verified Vendor"}
+          {vendorStatus === 'pending' && "⌛ Verification Pending"}
+          {vendorStatus === 'rejected' && "✕ Application Rejected"}
         </div>
       </div>
 
-      {/* WARNING BANNER FOR UNVERIFIED VENDORS */}
-      {vendorStatus !== 'verified' && (
+      {/* --- REJECTED BANNER --- */}
+      {vendorStatus === 'rejected' && (
+        <div className="bg-red-600 text-white p-6 rounded-3xl flex items-center justify-between shadow-lg shadow-red-100">
+          <div className="flex items-center gap-4">
+            <XCircle size={32} />
+            <div>
+              <p className="font-black uppercase text-sm tracking-wide">Application Rejected</p>
+              <p className="text-xs opacity-90">Your vendor profile did not meet our requirements. Please contact support or update your profile details to try again.</p>
+            </div>
+          </div>
+          <button 
+            onClick={() => window.location.href='/vendor/setup'}
+            className="bg-white text-red-600 px-4 py-2 rounded-xl font-bold text-xs uppercase"
+          >
+            Update Profile
+          </button>
+        </div>
+      )}
+
+      {/* --- PENDING BANNER --- */}
+      {vendorStatus === 'pending' && (
         <div className="bg-slate-900 text-white p-6 rounded-3xl flex items-center justify-between">
           <div className="flex items-center gap-4">
             <AlertCircle className="text-amber-400" size={24} />
@@ -123,8 +144,7 @@ export default function VendorDashboard() {
   );
 }
 
-// ... RecentRFQs function remains the same ...
-
+// RecentRFQs component remains as you provided...
 function RecentRFQs() {
   const [rfqs, setRfqs] = useState([]);
   const [loading, setLoading] = useState(true);

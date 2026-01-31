@@ -3,7 +3,8 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
 import { verifyAdmin } from '../middleware/roles.js';
-import { verifyToken } from '../middleware/auth.js'; // ADDED THIS
+import { verifyToken } from '../middleware/auth.js';
+import { rejectVendor } from '../controllers/adminController.js';
 
 const router = express.Router();
 
@@ -152,7 +153,7 @@ router.get('/stats', verifyToken, verifyAdmin, async (req, res) => {
 router.patch('/verify-vendor/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const updatedVendor = await Vendor.findOneAndUpdate(
-      { user: req.params.id }, // ID passed is the User ID
+      { user: req.params.id }, 
       { status: 'verified' },
       { new: true }
     );
@@ -163,14 +164,21 @@ router.patch('/verify-vendor/:id', verifyToken, verifyAdmin, async (req, res) =>
   }
 });
 
-// NEW: Get all Pending Vendors
+// Get all Pending OR Rejected Vendors so Admin can see them
 router.get('/vendors/pending', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const pendingVendors = await Vendor.find({ status: 'pending' }).populate('user', 'name email');
+    // FIX: Include 'rejected' in the search so they don't disappear from the dashboard
+    const pendingVendors = await Vendor.find({ 
+      status: { $in: ['pending', 'rejected'] } 
+    }).populate('user', 'name email');
+    
     res.json(pendingVendors);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
+// FIX: Changed 'isAdmin' to 'verifyAdmin' to match your imports
+router.patch('/reject-vendor/:userId', verifyToken, verifyAdmin, rejectVendor);
 
 export default router;
