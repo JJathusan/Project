@@ -37,6 +37,7 @@ import AdminUsers from "./pages/AdminUsers";
 import AdminVendors from "./pages/AdminVendors";
 import AdminBuyers from "./pages/AdminBuyers";
 import AdminSettings from "./pages/AdminSettings";
+import AdminVendorDetail from "./pages/AdminVendorDetail"
 
 // Layouts
 import Layout from "./components/layout/Layout";
@@ -110,6 +111,7 @@ export default function App() {
           <Route path="/admin/vendors" element={<AdminVendors />} />
           <Route path="/admin/buyers" element={<AdminBuyers />} />
           <Route path="/admin/settings" element={<AdminSettings />} />
+          <Route path="/admin/vendors/:id" element={<AdminVendorDetail />} />
         </Route>
 
         {/* 6. Catch-all */}

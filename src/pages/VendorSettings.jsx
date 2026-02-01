@@ -3,7 +3,7 @@ import axios from "axios";
 import { 
   Save, User, Building2, Mail, Lock, Loader2, CheckCircle, 
   Upload, Landmark, FileText, Image as ImageIcon, MapPin,
-  Briefcase, Globe, Percent
+  Briefcase, Globe, Percent, Phone, Clock
 } from "lucide-react";
 
 export default function VendorSettings() {
@@ -209,23 +209,19 @@ export default function VendorSettings() {
               </div>
 
               <div>
-                <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Contact Person</label>
-                <input type="text" value={userData.name} onChange={(e) => setUserData({...userData, name: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
-              </div>
-
-              <div>
                 <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Legal Company Name</label>
-                <input type="text" value={userData.companyName} onChange={(e) => setUserData({...userData, companyName: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
+                <input type="text" value={userData.companyName || ""} onChange={(e) => setUserData({...userData, companyName: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
               </div>
 
               <div>
                 <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Reg Number</label>
-                <input type="text" value={vendorProfile.businessRegNumber} onChange={(e) => setVendorProfile({...vendorProfile, businessRegNumber: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
+                <input type="text" value={vendorProfile.businessRegNumber || ""} onChange={(e) => setVendorProfile({...vendorProfile, businessRegNumber: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
               </div>
 
               <div>
                 <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Industry</label>
-                <select value={vendorProfile.industry} onChange={(e) => setVendorProfile({...vendorProfile, industry: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold">
+                <select value={vendorProfile.industry || ""} onChange={(e) => setVendorProfile({...vendorProfile, industry: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold">
+                   <option value="">Select Industry</option>
                    <option value="Electronics">Electronics</option>
                    <option value="Textiles">Textiles</option>
                    <option value="Chemicals">Chemicals</option>
@@ -234,14 +230,59 @@ export default function VendorSettings() {
                 </select>
               </div>
 
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Years in Business</label>
+                <input type="number" value={vendorProfile.yearsInBusiness || ""} onChange={(e) => setVendorProfile({...vendorProfile, yearsInBusiness: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Company Size (Staff)</label>
+                <input type="text" placeholder="e.g. 10-50" value={vendorProfile.companySize || ""} onChange={(e) => setVendorProfile({...vendorProfile, companySize: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Response Time</label>
+                <select value={vendorProfile.responseTime || "Within 24 hours"} onChange={(e) => setVendorProfile({...vendorProfile, responseTime: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold">
+                   <option value="Within 1 hour">Within 1 hour</option>
+                   <option value="Within 6 hours">Within 6 hours</option>
+                   <option value="Within 24 hours">Within 24 hours</option>
+                </select>
+              </div>
+
               <div className="md:col-span-2">
                 <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Business Description</label>
-                <textarea rows="3" value={vendorProfile.description} onChange={(e) => setVendorProfile({...vendorProfile, description: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
+                <textarea rows="3" value={vendorProfile.description || ""} onChange={(e) => setVendorProfile({...vendorProfile, description: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
               </div>
             </div>
           </div>
 
-          {/* Section 2: Contact & Banking */}
+          {/* Section 2: Contact & Location */}
+          <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm">
+            <div className="flex items-center gap-3 mb-8 border-b border-slate-50 pb-5">
+              <MapPin size={22} className="text-emerald-600" />
+              <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Contact & Location</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Contact Person</label>
+                <input type="text" value={vendorProfile.contactPerson || ""} onChange={(e) => setVendorProfile({...vendorProfile, contactPerson: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Country</label>
+                <input type="text" value={vendorProfile.country || ""} onChange={(e) => setVendorProfile({...vendorProfile, country: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Phone Number</label>
+                <input type="text" value={vendorProfile.phone || ""} onChange={(e) => setVendorProfile({...vendorProfile, phone: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Registered Office Address</label>
+                <input type="text" value={vendorProfile.officeAddress || ""} onChange={(e) => setVendorProfile({...vendorProfile, officeAddress: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Legal & Financials */}
           <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm">
             <div className="flex items-center gap-3 mb-8 border-b border-slate-50 pb-5">
               <Landmark size={22} className="text-emerald-600" />
@@ -250,7 +291,7 @@ export default function VendorSettings() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Tax ID / TIN</label>
-                <input type="text" value={vendorProfile.taxId} onChange={(e) => setVendorProfile({...vendorProfile, taxId: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
+                <input type="text" value={vendorProfile.taxId || ""} onChange={(e) => setVendorProfile({...vendorProfile, taxId: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
               </div>
               <div>
                 <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Business License</label>
@@ -264,19 +305,19 @@ export default function VendorSettings() {
               </div>
               <div>
                 <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Bank Name</label>
-                <input type="text" value={vendorProfile.bankDetails.bankName} onChange={(e) => setVendorProfile({...vendorProfile, bankDetails: {...vendorProfile.bankDetails, bankName: e.target.value}})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
+                <input type="text" value={vendorProfile.bankDetails.bankName || ""} onChange={(e) => setVendorProfile({...vendorProfile, bankDetails: {...vendorProfile.bankDetails, bankName: e.target.value}})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
               </div>
               <div>
                 <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Account Number</label>
-                <input type="text" value={vendorProfile.bankDetails.accountNumber} onChange={(e) => setVendorProfile({...vendorProfile, bankDetails: {...vendorProfile.bankDetails, accountNumber: e.target.value}})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
+                <input type="text" value={vendorProfile.bankDetails.accountNumber || ""} onChange={(e) => setVendorProfile({...vendorProfile, bankDetails: {...vendorProfile.bankDetails, accountNumber: e.target.value}})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
               </div>
               <div>
                 <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">Account Name</label>
-                <input type="text" value={vendorProfile.bankDetails.accountName} onChange={(e) => setVendorProfile({...vendorProfile, bankDetails: {...vendorProfile.bankDetails, accountName: e.target.value}})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
+                <input type="text" value={vendorProfile.bankDetails.accountName || ""} onChange={(e) => setVendorProfile({...vendorProfile, bankDetails: {...vendorProfile.bankDetails, accountName: e.target.value}})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
               </div>
               <div>
                 <label className="block text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest pl-1">SWIFT Code</label>
-                <input type="text" value={vendorProfile.bankDetails.swiftCode} onChange={(e) => setVendorProfile({...vendorProfile, bankDetails: {...vendorProfile.bankDetails, swiftCode: e.target.value}})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
+                <input type="text" value={vendorProfile.bankDetails.swiftCode || ""} onChange={(e) => setVendorProfile({...vendorProfile, bankDetails: {...vendorProfile.bankDetails, swiftCode: e.target.value}})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 font-bold" />
               </div>
             </div>
           </div>
@@ -300,9 +341,9 @@ export default function VendorSettings() {
               <Lock size={20} className="text-blue-600" /> Password
             </h3>
             <div className="space-y-4">
-              <input type="password" placeholder="Current Password" value={passwordData.currentPassword} onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" />
-              <input type="password" placeholder="New Password" value={passwordData.newPassword} onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" />
-              <input type="password" placeholder="Confirm New" value={passwordData.confirmPassword} onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" />
+              <input type="password" placeholder="Current Password" value={passwordData.currentPassword || ""} onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" />
+              <input type="password" placeholder="New Password" value={passwordData.newPassword || ""} onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" />
+              <input type="password" placeholder="Confirm New" value={passwordData.confirmPassword || ""} onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" />
               <button type="button" onClick={handlePasswordUpdate} disabled={passwordLoading} className="w-full py-4 bg-slate-100 text-slate-900 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-50 transition-all">
                 {passwordLoading ? "Wait..." : "Change Password"}
               </button>

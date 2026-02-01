@@ -6,7 +6,8 @@ import { useNavigate } from "react-router-dom";
 export default function VendorDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [vendorStatus, setVendorStatus] = useState("pending"); 
+  const [vendorStatus, setVendorStatus] = useState("pending");
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -75,7 +76,7 @@ export default function VendorDashboard() {
             </div>
           </div>
           <button 
-            onClick={() => window.location.href='/vendor/setup'}
+            onClick={() => navigate('/vendor/settings')}
             className="bg-white text-red-600 px-4 py-2 rounded-xl font-bold text-xs uppercase"
           >
             Update Profile

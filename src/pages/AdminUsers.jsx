@@ -224,6 +224,12 @@ export default function AdminUsers({ defaultFilter = "all" }) {
                         >
                           <Trash2 size={18} />
                         </button>
+                        <button 
+  onClick={() => navigate(`/admin/vendors/${user._id}`)}
+  className="bg-blue-600 text-white px-3 py-1 rounded-lg text-xs font-bold"
+>
+  View Intelligence
+</button>
                       </div>
                     </td>
                   </tr>

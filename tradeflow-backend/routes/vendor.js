@@ -1,10 +1,12 @@
 import express from 'express';
 import multer from 'multer';
+import mongoose from 'mongoose'; // ADDED: Required for mongoose.model calls
 import { verifyVendorOrAdmin } from '../middleware/roles.js';
-import { verifyToken, isVerifiedVendor } from '../middleware/auth.js'; // FIX: Imported isVerifiedVendor
+import { verifyToken, isVerifiedVendor } from '../middleware/auth.js'; 
 import { setupVendorProfile, getVendorStats } from '../controllers/vendorController.js';
 import Product from '../models/Product.js';
 import Vendor from '../models/Vendor.js';
+import Order from '../models/Order.js'; // ADDED: Direct import is safer for the admin route
 
 const router = express.Router();
 
@@ -16,7 +18,6 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // --- 2. Dashboard Stats ---
-// verifyToken must ALWAYS come before verifyVendorOrAdmin
 router.get('/stats', verifyToken, verifyVendorOrAdmin, getVendorStats);
 
 // --- 3. Vendor Profile Setup ---
@@ -27,7 +28,7 @@ router.post('/setup', verifyToken, verifyVendorOrAdmin, upload.fields([
 
 // --- 4. Inventory Management ---
 
-// GET Full Inventory - FIX: Added isVerifiedVendor
+// GET Full Inventory
 router.get('/inventory', verifyToken, verifyVendorOrAdmin, isVerifiedVendor, async (req, res) => {
   try {
     const products = await Product.find({ vendor: req.user.id }).sort({ createdAt: -1 });
@@ -37,7 +38,7 @@ router.get('/inventory', verifyToken, verifyVendorOrAdmin, isVerifiedVendor, asy
   }
 });
 
-// POST Add Product - FIX: Added isVerifiedVendor
+// POST Add Product
 router.post('/add-product', verifyToken, verifyVendorOrAdmin, isVerifiedVendor, upload.array('images', 5), async (req, res) => {
   try {
     const { name, category, price, moq, specifications, ...rest } = req.body;
@@ -70,7 +71,7 @@ router.post('/add-product', verifyToken, verifyVendorOrAdmin, isVerifiedVendor, 
   }
 });
 
-// DELETE Product - FIX: Added isVerifiedVendor
+// DELETE Product
 router.delete('/product/:id', verifyToken, verifyVendorOrAdmin, isVerifiedVendor, async (req, res) => {
   try {
     const deleted = await Product.findOneAndDelete({ _id: req.params.id, vendor: req.user.id });
@@ -91,5 +92,41 @@ router.get('/profile', verifyToken, verifyVendorOrAdmin, async (req, res) => {
     res.status(500).json({ error: err.message }); 
   }
 });
+
+// --- Admin Only: Get Full Vendor Details for Dashboard ---
+router.get('/admin/detail/:vendorId', verifyToken, async (req, res) => {
+  try {
+    // 1. Check if the requester is an Admin
+    if (req.user.role !== 'admin') return res.status(403).json({ message: "Admin access required" });
+
+    const vendorId = req.params.vendorId;
+
+    // 2. Fetch all data related to this vendor
+    const [profile, products, orders] = await Promise.all([
+      Vendor.findOne({ user: vendorId }).populate('user', 'name email'),
+      Product.find({ vendor: vendorId }),
+      Order.find({ vendor: vendorId }).populate('buyer', 'name email').sort({ createdAt: -1 })
+    ]);
+
+    // 3. Calculate Total Sales (Safe check for totalPrice)
+    const totalSales = orders
+      .filter(o => o.status === 'delivered' || o.status === 'confirmed')
+      .reduce((sum, o) => sum + (o.totalPrice || 0), 0);
+
+    res.json({
+      profile,
+      products,
+      orders,
+      stats: {
+        totalProducts: products.length,
+        totalOrders: orders.length,
+        totalRevenue: totalSales
+      }
+    });
+  } catch (err) {
+    console.error("Admin Detailed Fetch Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+}); 
 
 export default router;
