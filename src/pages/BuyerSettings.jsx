@@ -31,7 +31,7 @@ export default function BuyerSettings() {
     if (!token) return;
 
     try {
-      const res = await axios.get("${API_BASE_URL}/api/auth/profile", {
+      const res = await axios.get('${API_BASE_URL}/api/auth/profile', {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -57,7 +57,7 @@ export default function BuyerSettings() {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.patch(
-        "${API_BASE_URL}/api/auth/profile",
+        '${API_BASE_URL}/api/auth/profile',
         {
           name: userData.name,
           email: userData.email
@@ -98,7 +98,7 @@ export default function BuyerSettings() {
     try {
       const token = localStorage.getItem("token");
       await axios.patch(
-        "${API_BASE_URL}/api/auth/password",
+        '${API_BASE_URL}/api/auth/password',
         {
           currentPassword: passwordData.currentPassword,
           newPassword: passwordData.newPassword

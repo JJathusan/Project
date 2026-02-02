@@ -32,7 +32,7 @@ export default function AdminUsers({ defaultFilter = "all" }) {
 
     try {
       const endpoint = filterRole === "all" 
-        ? "${API_BASE_URL}/api/admin/users"
+        ? '${API_BASE_URL}/api/admin/users'
         : `${API_BASE_URL}/api/admin/users/${filterRole}`;
       
       const res = await axios.get(endpoint, {
@@ -71,7 +71,7 @@ export default function AdminUsers({ defaultFilter = "all" }) {
 
     const token = localStorage.getItem("token");
     try {
-      await axios.post("${API_BASE_URL}/api/admin/users", newUser, {
+      await axios.post('${API_BASE_URL}/api/admin/users', newUser, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert("User created successfully");

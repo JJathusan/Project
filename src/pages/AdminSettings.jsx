@@ -40,7 +40,7 @@ export default function AdminSettings() {
     }
 
     try {
-      const res = await axios.get("${API_BASE_URL}/api/auth/profile", {
+      const res = await axios.get('${API_BASE_URL}/api/auth/profile', {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -85,7 +85,7 @@ export default function AdminSettings() {
 
     try {
       await axios.patch(
-        "${API_BASE_URL}/api/auth/password", 
+        '${API_BASE_URL}/api/auth/password', 
         {
           currentPassword: passwordData.currentPassword,
           newPassword: passwordData.newPassword

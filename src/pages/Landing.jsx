@@ -14,7 +14,7 @@ export default function Landing() {
   useEffect(() => {
     const fetchTeaser = async () => {
       try {
-        const res = await axios.get("${API_BASE_URL}/api/products/all");
+        const res = await axios.get('${API_BASE_URL}/api/products/all');
         // Take 8 products to fill the scroll area better
         setFeaturedProducts(res.data.slice(0, 8));
       } catch (err) {

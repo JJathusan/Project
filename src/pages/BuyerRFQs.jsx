@@ -18,7 +18,7 @@ export default function BuyerRFQs() {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-      const res = await axios.get("${API_BASE_URL}/api/quotes/buyer", {
+      const res = await axios.get('${API_BASE_URL}/api/quotes/buyer', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setQuotes(res.data);

@@ -51,7 +51,7 @@ export default function AdminDashboard() {
     }
 
     try {
-      const res = await axios.get("${API_BASE_URL}/api/admin/stats", {
+      const res = await axios.get('${API_BASE_URL}/api/admin/stats', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStats(res.data);
@@ -65,7 +65,7 @@ export default function AdminDashboard() {
   const fetchPendingVendors = async () => {
     const token = localStorage.getItem("token");
     try {
-      const res = await axios.get("${API_BASE_URL}/api/admin/vendors/pending", {
+      const res = await axios.get('${API_BASE_URL}/api/admin/vendors/pending', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPendingVendors(res.data);

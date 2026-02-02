@@ -20,10 +20,10 @@ export default function BuyerNotifications() {
 
     try {
       const [quotesRes, ordersRes] = await Promise.all([
-        axios.get("${API_BASE_URL}/api/quotes/buyer", {
+        axios.get('${API_BASE_URL}/api/quotes/buyer', {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        axios.get("${API_BASE_URL}/api/orders/buyer", {
+        axios.get('${API_BASE_URL}/api/orders/buyer', {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);
