@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import { Users, Edit2, Trash2, Search, Loader2, Mail, Building2, Shield, Plus, X } from "lucide-react";
 
 export default function AdminUsers({ defaultFilter = "all" }) {
@@ -31,8 +32,8 @@ export default function AdminUsers({ defaultFilter = "all" }) {
 
     try {
       const endpoint = filterRole === "all" 
-        ? "http://localhost:5000/api/admin/users"
-        : `http://localhost:5000/api/admin/users/${filterRole}`;
+        ? "${API_BASE_URL}/api/admin/users"
+        : `${API_BASE_URL}/api/admin/users/${filterRole}`;
       
       const res = await axios.get(endpoint, {
         headers: { Authorization: `Bearer ${token}` }
@@ -51,7 +52,7 @@ export default function AdminUsers({ defaultFilter = "all" }) {
 
     const token = localStorage.getItem("token");
     try {
-      await axios.delete(`http://localhost:5000/api/admin/users/${userId}`, {
+      await axios.delete(`${API_BASE_URL}/api/admin/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert("User deleted successfully");
@@ -70,7 +71,7 @@ export default function AdminUsers({ defaultFilter = "all" }) {
 
     const token = localStorage.getItem("token");
     try {
-      await axios.post("http://localhost:5000/api/admin/users", newUser, {
+      await axios.post("${API_BASE_URL}/api/admin/users", newUser, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert("User created successfully");
@@ -360,7 +361,7 @@ export default function AdminUsers({ defaultFilter = "all" }) {
     
     const token = localStorage.getItem("token");
     axios.patch(
-      `http://localhost:5000/api/admin/users/${user._id}`,
+      `${API_BASE_URL}/api/admin/users/${user._id}`,
       { name: newName, email: newEmail, companyName: newCompanyName },
       { headers: { Authorization: `Bearer ${token}` } }
     )

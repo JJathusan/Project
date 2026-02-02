@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import { Truck, PackageCheck, MapPin, Calendar, Loader2, ExternalLink } from "lucide-react";
 
 export default function VendorShipments() {
@@ -18,7 +19,7 @@ export default function VendorShipments() {
     if (!token) return;
 
     try {
-      const res = await axios.get("http://localhost:5000/api/orders/vendor", {
+      const res = await axios.get("${API_BASE_URL}/api/orders/vendor", {
         headers: { Authorization: `Bearer ${token}` }
       });
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import {
   ArrowLeft, ShieldCheck, Globe, Clock, FileText,
   MessageSquare, Truck, CheckCircle, Package, Loader2, X, Star,
@@ -12,7 +13,7 @@ export default function ProductDetail() {
   const navigate = useNavigate();
 
   // IMPORTANT: Ensure this matches your backend server URL
-  const API_BASE = "http://localhost:5000";
+  const API_BASE = "`${API_BASE_URL}";
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);

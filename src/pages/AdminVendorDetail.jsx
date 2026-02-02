@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import { Building2, Package, ShoppingCart, DollarSign, ArrowLeft } from "lucide-react";
 
 export default function AdminVendorDetail() {
@@ -12,7 +13,7 @@ export default function AdminVendorDetail() {
     const fetchVendorData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(`http://localhost:5000/api/vendors/admin/detail/${id}`, {
+        const res = await axios.get(`${API_BASE_URL}/api/vendors/admin/detail/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setData(res.data);

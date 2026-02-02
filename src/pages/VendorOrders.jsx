@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import { 
   Truck, 
   PackageCheck, 
@@ -33,7 +34,7 @@ export default function VendorOrders() {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-      const res = await axios.get("http://localhost:5000/api/orders/vendor", {
+      const res = await axios.get("${API_BASE_URL}/api/orders/vendor", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setOrders(res.data);
@@ -50,7 +51,7 @@ export default function VendorOrders() {
 
     try {
       await axios.patch(
-        `http://localhost:5000/api/orders/${orderId}/status`,
+        `${API_BASE_URL}/api/orders/${orderId}/status`,
         updateData,
         {
           headers: { Authorization: `Bearer ${token}` }

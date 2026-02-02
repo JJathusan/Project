@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import { Plus, Package, AlertTriangle, X, Trash2, Upload, Settings } from "lucide-react";
 
 export default function VendorInventory() {
@@ -32,7 +33,7 @@ export default function VendorInventory() {
     if (!token) return;
     try {
       // CHANGED: /api/vendor -> /api/vendors
-      const res = await axios.get("http://localhost:5000/api/vendors/inventory", {
+      const res = await axios.get("${API_BASE_URL}/api/vendors/inventory", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setInventory(res.data);
@@ -61,7 +62,7 @@ export default function VendorInventory() {
 
     try {
       // CHANGED: /api/vendor -> /api/vendors
-      await axios.post("http://localhost:5000/api/vendors/add-product", formData, {
+      await axios.post("${API_BASE_URL}/api/vendors/add-product", formData, {
         headers: { 
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data" 
@@ -104,7 +105,7 @@ export default function VendorInventory() {
     try {
       const token = localStorage.getItem("token");
       // CHANGED: /api/vendor -> /api/vendors
-      await axios.delete(`http://localhost:5000/api/vendors/product/${id}`, {
+      await axios.delete(`${API_BASE_URL}/api/vendors/product/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchInventory(); 
@@ -145,7 +146,7 @@ export default function VendorInventory() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <img 
-                        src={item.images?.[0] ? `http://localhost:5000${item.images[0]}` : 'https://via.placeholder.com/40'} 
+                        src={item.images?.[0] ? `${API_BASE_URL}${item.images[0]}` : 'https://via.placeholder.com/40'} 
                         className="w-10 h-10 rounded-xl object-cover bg-slate-100" 
                         alt=""
                       />

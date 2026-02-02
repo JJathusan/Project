@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import { 
   Save, User, Building2, Mail, Lock, Loader2, CheckCircle, 
   Upload, Landmark, FileText, Image as ImageIcon, MapPin,
@@ -67,8 +68,8 @@ export default function VendorSettings() {
     try {
       const headers = { Authorization: `Bearer ${token}` };
       const [authRes, profileRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/auth/profile", { headers }),
-        axios.get("http://localhost:5000/api/vendors/profile", { headers })
+        axios.get("${API_BASE_URL}/api/auth/profile", { headers }),
+        axios.get("${API_BASE_URL}/api/vendors/profile", { headers })
       ]);
       
       setUserData({
@@ -84,10 +85,10 @@ export default function VendorSettings() {
         });
         
         if (profileRes.data.logo) {
-          setPreviews(prev => ({ ...prev, logo: `http://localhost:5000${profileRes.data.logo}` }));
+          setPreviews(prev => ({ ...prev, logo: `${API_BASE_URL}${profileRes.data.logo}` }));
         }
         if (profileRes.data.businessLicenseUrl) {
-          setPreviews(prev => ({ ...prev, license: `http://localhost:5000${profileRes.data.businessLicenseUrl}` }));
+          setPreviews(prev => ({ ...prev, license: `${API_BASE_URL}${profileRes.data.businessLicenseUrl}` }));
         }
       }
     } catch (err) {
@@ -114,7 +115,7 @@ export default function VendorSettings() {
       const headers = { Authorization: `Bearer ${token}` };
 
       // 1. Update Auth Account Data
-      await axios.patch("http://localhost:5000/api/auth/profile", userData, { headers });
+      await axios.patch("${API_BASE_URL}/api/auth/profile", userData, { headers });
 
       // 2. Update Vendor Business Profile
       const formData = new FormData();
@@ -130,7 +131,7 @@ export default function VendorSettings() {
       if (files.logo) formData.append("logo", files.logo);
       if (files.license) formData.append("businessLicense", files.license);
 
-      await axios.post("http://localhost:5000/api/vendors/setup", formData, {
+      await axios.post("${API_BASE_URL}/api/vendors/setup", formData, {
         headers: { ...headers, "Content-Type": "multipart/form-data" }
       });
 
@@ -156,7 +157,7 @@ export default function VendorSettings() {
     setPasswordLoading(true);
     try {
       const token = localStorage.getItem("token");
-      await axios.patch("http://localhost:5000/api/auth/password", {
+      await axios.patch("${API_BASE_URL}/api/auth/password", {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword
       }, { headers: { Authorization: `Bearer ${token}` } });

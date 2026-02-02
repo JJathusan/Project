@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import { Users, Store, ShoppingBag, Shield, TrendingUp, Loader2, AlertCircle, CheckCircle2, XCircle } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -50,7 +51,7 @@ export default function AdminDashboard() {
     }
 
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/stats", {
+      const res = await axios.get("${API_BASE_URL}/api/admin/stats", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStats(res.data);
@@ -64,7 +65,7 @@ export default function AdminDashboard() {
   const fetchPendingVendors = async () => {
     const token = localStorage.getItem("token");
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/vendors/pending", {
+      const res = await axios.get("${API_BASE_URL}/api/admin/vendors/pending", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPendingVendors(res.data);
@@ -76,7 +77,7 @@ export default function AdminDashboard() {
   const handleVerify = async (userId) => {
     const token = localStorage.getItem("token");
     try {
-      await axios.patch(`http://localhost:5000/api/admin/verify-vendor/${userId}`, {}, {
+      await axios.patch(`${API_BASE_URL}/api/admin/verify-vendor/${userId}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchPendingVendors();
@@ -93,7 +94,7 @@ export default function AdminDashboard() {
     const token = localStorage.getItem("token");
     try {
       // Assuming your backend has a reject endpoint, if not, this can be mapped to a 'rejected' status
-      await axios.patch(`http://localhost:5000/api/admin/reject-vendor/${userId}`, {}, {
+      await axios.patch(`${API_BASE_URL}/api/admin/reject-vendor/${userId}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchPendingVendors();

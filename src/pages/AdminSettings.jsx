@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import { Shield, Mail, User, Loader2, Lock, Eye, EyeOff, CheckCircle, XCircle } from "lucide-react";
 
 export default function AdminSettings() {
@@ -39,7 +40,7 @@ export default function AdminSettings() {
     }
 
     try {
-      const res = await axios.get("http://localhost:5000/api/auth/profile", {
+      const res = await axios.get("${API_BASE_URL}/api/auth/profile", {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -84,7 +85,7 @@ export default function AdminSettings() {
 
     try {
       await axios.patch(
-        "http://localhost:5000/api/auth/password", 
+        "${API_BASE_URL}/api/auth/password", 
         {
           currentPassword: passwordData.currentPassword,
           newPassword: passwordData.newPassword

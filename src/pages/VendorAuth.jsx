@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Truck, ArrowRight, Loader2 } from "lucide-react";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 
 export default function VendorAuth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -19,7 +20,7 @@ export default function VendorAuth() {
     setLoading(true);
     try {
       const endpoint = isLogin ? "/login" : "/signup";
-      const res = await axios.post(`http://localhost:5000/api/auth${endpoint}`, { 
+      const res = await axios.post(`${API_BASE_URL}/api/auth${endpoint}`, { 
         ...formData, 
         role: "vendor" 
       });

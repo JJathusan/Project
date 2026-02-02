@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Shield, ArrowRight, Mail, Lock } from "lucide-react";
+import { API_BASE_URL } from "../config/api";
 import axios from "axios";
 
 export default function AdminAuth() {
@@ -13,7 +14,7 @@ export default function AdminAuth() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(`http://localhost:5000/api/auth/login`, { 
+      const res = await axios.postaxios.post(`${API_BASE_URL}/api/auth/login`, { 
         ...formData, 
         role: "admin" 
       });

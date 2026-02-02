@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import Card from "../components/ui/Card";
 import { Filter, SlidersHorizontal, Loader2, PackageSearch, X } from "lucide-react";
 
@@ -19,7 +20,7 @@ export default function Marketplace() {
     const fetchMarketplace = async () => {
       try {
         setLoading(true);
-        const res = await axios.get("http://localhost:5000/api/products/all");
+        const res = await axios.get("`${API_BASE_URL}/api/products/all");
         setProducts(res.data || []);
       } catch (err) {
         console.error("Marketplace fetch error:", err);

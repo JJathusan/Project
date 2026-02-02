@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import {
   FileText,
   Clock,
@@ -30,7 +31,7 @@ export default function VendorQuotes() {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-      const res = await axios.get("http://localhost:5000/api/quotes/vendor", {
+      const res = await axios.get("${API_BASE_URL}/api/quotes/vendor", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setQuotes(res.data);
@@ -47,7 +48,7 @@ export default function VendorQuotes() {
 
     try {
       await axios.patch(
-        `http://localhost:5000/api/quotes/${quoteId}/respond`,
+        `${API_BASE_URL}/api/quotes/${quoteId}/respond`,
         {
           vendorPrice: parseFloat(responseData.price),
           vendorResponse: responseData.message,
@@ -73,7 +74,7 @@ export default function VendorQuotes() {
 
     try {
       await axios.patch(
-        `http://localhost:5000/api/quotes/${quoteId}/respond`,
+        `${API_BASE_URL}/api/quotes/${quoteId}/respond`,
         { status: "declined" },
         { headers: { Authorization: `Bearer ${token}` } }
       );

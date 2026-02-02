@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import { useNavigate } from "react-router-dom";
 import { 
   Building2, Landmark, Upload, CheckCircle, 
@@ -46,7 +47,7 @@ export default function VendorProfileSetup() {
     const fetchExistingProfile = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:5000/api/vendors/profile", {
+        const res = await axios.get("${API_BASE_URL}/api/vendors/profile", {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -57,8 +58,8 @@ export default function VendorProfileSetup() {
             bankDetails: res.data.bankDetails || formData.bankDetails
           });
           // Set previews for existing images
-          if (res.data.logo) setPreviews(p => ({ ...p, logo: `http://localhost:5000${res.data.logo}` }));
-          if (res.data.businessLicenseUrl) setPreviews(p => ({ ...p, license: `http://localhost:5000${res.data.businessLicenseUrl}` }));
+          if (res.data.logo) setPreviews(p => ({ ...p, logo: `${API_BASE_URL}${res.data.logo}` }));
+          if (res.data.businessLicenseUrl) setPreviews(p => ({ ...p, license: `${API_BASE_URL}${res.data.businessLicenseUrl}` }));
         }
       } catch (err) {
         console.log("No existing profile found, starting fresh.");
@@ -114,7 +115,7 @@ export default function VendorProfileSetup() {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.post("http://localhost:5000/api/vendors/setup", data, {
+      await axios.post("${API_BASE_URL}/api/vendors/setup", data, {
         headers: { 
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data" 

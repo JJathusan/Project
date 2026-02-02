@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import { FileText, Clock, CheckCircle, XCircle, Loader2 } from "lucide-react";
 
 export default function BuyerRFQs() {
@@ -17,7 +18,7 @@ export default function BuyerRFQs() {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-      const res = await axios.get("http://localhost:5000/api/quotes/buyer", {
+      const res = await axios.get("${API_BASE_URL}/api/quotes/buyer", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setQuotes(res.data);
@@ -36,7 +37,7 @@ export default function BuyerRFQs() {
 
     try {
       await axios.post(
-        `http://localhost:5000/api/quotes/${quoteId}/accept`,
+        `${API_BASE_URL}/api/quotes/${quoteId}/accept`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

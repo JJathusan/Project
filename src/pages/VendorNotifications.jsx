@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import { Bell, CheckCircle, XCircle, AlertCircle, Info, Loader2 } from "lucide-react";
 
 export default function VendorNotifications() {
@@ -20,10 +21,10 @@ export default function VendorNotifications() {
     try {
       // Fetch quotes and orders to generate notifications
       const [quotesRes, ordersRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/quotes/vendor", {
+        axios.get("${API_BASE_URL}/api/quotes/vendor", {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        axios.get("http://localhost:5000/api/orders/vendor", {
+        axios.get("${API_BASE_URL}/api/orders/vendor", {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);

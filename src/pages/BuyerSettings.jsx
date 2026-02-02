@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import { Save, User, Mail, Lock, Loader2, CheckCircle, XCircle } from "lucide-react";
 
 export default function BuyerSettings() {
@@ -30,7 +31,7 @@ export default function BuyerSettings() {
     if (!token) return;
 
     try {
-      const res = await axios.get("http://localhost:5000/api/auth/profile", {
+      const res = await axios.get("${API_BASE_URL}/api/auth/profile", {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -56,7 +57,7 @@ export default function BuyerSettings() {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.patch(
-        "http://localhost:5000/api/auth/profile",
+        "${API_BASE_URL}/api/auth/profile",
         {
           name: userData.name,
           email: userData.email
@@ -97,7 +98,7 @@ export default function BuyerSettings() {
     try {
       const token = localStorage.getItem("token");
       await axios.patch(
-        "http://localhost:5000/api/auth/password",
+        "${API_BASE_URL}/api/auth/password",
         {
           currentPassword: passwordData.currentPassword,
           newPassword: passwordData.newPassword

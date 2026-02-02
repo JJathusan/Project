@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import { PackageCheck, Truck, MapPin, Calendar, Loader2, Filter, SlidersHorizontal, X } from "lucide-react";
 
 export default function BuyerOrders() {
@@ -26,7 +27,7 @@ export default function BuyerOrders() {
     }
     try {
       setError(null);
-      const res = await axios.get("http://localhost:5000/api/orders/buyer", {
+      const res = await axios.get("${API_BASE_URL}/api/orders/buyer", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setOrders(res.data);

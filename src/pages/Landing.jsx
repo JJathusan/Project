@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import { ShoppingBag, Truck, ArrowRight, Shield, Globe, Zap, CheckCircle, Loader2, Star, TrendingUp } from "lucide-react";
 
 export default function Landing() {
@@ -13,7 +14,7 @@ export default function Landing() {
   useEffect(() => {
     const fetchTeaser = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/products/all");
+        const res = await axios.get("${API_BASE_URL}/api/products/all");
         // Take 8 products to fill the scroll area better
         setFeaturedProducts(res.data.slice(0, 8));
       } catch (err) {
@@ -132,7 +133,7 @@ export default function Landing() {
                 >
                   <div className="h-44 w-full rounded-3xl bg-slate-50 mb-4 overflow-hidden relative">
                     <img 
-                      src={product.images?.[0] ? `http://localhost:5000${product.images[0]}` : "https://via.placeholder.com/400x300"} 
+                      src={product.images?.[0] ? `${API_BASE_URL}${product.images[0]}` : "https://via.placeholder.com/400x300"} 
                       alt={product.name} 
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
                     />

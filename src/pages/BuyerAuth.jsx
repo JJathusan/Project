@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Mail, Lock, User, ShoppingBag, ArrowRight } from "lucide-react";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 
 export default function BuyerAuth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -12,7 +13,7 @@ export default function BuyerAuth() {
     e.preventDefault();
     try {
       const endpoint = isLogin ? "/login" : "/signup";
-      const res = await axios.post(`http://localhost:5000/api/auth${endpoint}`, { ...formData, role: "buyer" });
+      const res = await axios.post(`${API_BASE_URL}/api/auth${endpoint}`, { ...formData, role: "buyer" });
       
       if (res.data.token) {
         localStorage.clear(); // Clear any old sessions

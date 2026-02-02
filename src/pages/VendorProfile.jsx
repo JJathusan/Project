@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useOutletContext, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 import { User, Building2, Mail, Loader2 } from "lucide-react";
 
 export default function VendorProfile() {
@@ -26,7 +27,7 @@ export default function VendorProfile() {
     }
 
     try {
-      const res = await axios.get("http://localhost:5000/api/auth/profile", {
+      const res = await axios.get("${API_BASE_URL}/api/auth/profile", {
         headers: { Authorization: `Bearer ${token}` }
       });
       
