@@ -12,27 +12,29 @@ export default function AdminAuth() {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await axios.postaxios.post(`${API_BASE_URL}/api/auth/login`, { 
-        ...formData, 
-        role: "admin" 
-      });
+  e.preventDefault();
+  try {
+    const res = await axios.post(`${API_BASE_URL}/api/auth/login`, { 
+      ...formData, 
+      role: "admin"  // optional
+    });
 
-      if (res.data.token) {
-        localStorage.clear();
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("userRole", res.data.user.role);
-        localStorage.setItem("userName", res.data.user.name);
-        localStorage.setItem("userEmail", res.data.user.email);
+    if (res.data.token) {
+      localStorage.clear();
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("userRole", res.data.user.role);
+      localStorage.setItem("userName", res.data.user.name);
+      localStorage.setItem("userEmail", res.data.user.email);
 
-        navigate("/admin/dashboard");
-      }
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || "Authentication failed";
-      alert(errorMessage);
+      navigate("/admin/dashboard");
     }
-  };
+  } catch (err) {
+    const errorMessage = err.response?.data?.message || "Authentication failed";
+    alert(errorMessage);
+    console.log(err.response?.data);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6">
