@@ -13,7 +13,7 @@ export default function ProductDetail() {
   const navigate = useNavigate();
 
   // IMPORTANT: Ensure this matches your backend server URL
-  const API_BASE = "`${API_BASE_URL}";
+  const API_BASE = `${API_BASE_URL}`;
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);

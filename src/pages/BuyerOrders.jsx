@@ -27,7 +27,7 @@ export default function BuyerOrders() {
     }
     try {
       setError(null);
-      const res = await axios.get('${API_BASE_URL}/api/orders/buyer', {
+      const res = await axios.get(`${API_BASE_URL}/api/orders/buyer`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setOrders(res.data);

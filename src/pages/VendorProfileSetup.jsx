@@ -47,7 +47,7 @@ export default function VendorProfileSetup() {
     const fetchExistingProfile = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("${API_BASE_URL}/api/vendors/profile", {
+        const res = await axios.get(`${API_BASE_URL}/api/vendors/profile`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -115,7 +115,7 @@ export default function VendorProfileSetup() {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.post("${API_BASE_URL}/api/vendors/setup", data, {
+      await axios.post(`${API_BASE_URL}/api/vendors/setup`, data, {
         headers: { 
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data" 

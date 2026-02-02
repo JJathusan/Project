@@ -32,7 +32,7 @@ export default function AdminUsers({ defaultFilter = "all" }) {
 
     try {
       const endpoint = filterRole === "all" 
-        ? '${API_BASE_URL}/api/admin/users'
+        ? `${API_BASE_URL}/api/admin/users`
         : `${API_BASE_URL}/api/admin/users/${filterRole}`;
       
       const res = await axios.get(endpoint, {

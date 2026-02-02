@@ -31,7 +31,7 @@ export default function VendorQuotes() {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-      const res = await axios.get("${API_BASE_URL}/api/quotes/vendor", {
+      const res = await axios.get(`${API_BASE_URL}/api/quotes/vendor`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setQuotes(res.data);

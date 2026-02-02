@@ -33,7 +33,7 @@ export default function VendorInventory() {
     if (!token) return;
     try {
       // CHANGED: /api/vendor -> /api/vendors
-      const res = await axios.get("${API_BASE_URL}/api/vendors/inventory", {
+      const res = await axios.get(`${API_BASE_URL}/api/vendors/inventory`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setInventory(res.data);
@@ -62,7 +62,7 @@ export default function VendorInventory() {
 
     try {
       // CHANGED: /api/vendor -> /api/vendors
-      await axios.post("${API_BASE_URL}/api/vendors/add-product", formData, {
+      await axios.post(`${API_BASE_URL}/api/vendors/add-product`, formData, {
         headers: { 
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data" 

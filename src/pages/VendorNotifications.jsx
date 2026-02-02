@@ -21,10 +21,10 @@ export default function VendorNotifications() {
     try {
       // Fetch quotes and orders to generate notifications
       const [quotesRes, ordersRes] = await Promise.all([
-        axios.get("${API_BASE_URL}/api/quotes/vendor", {
+        axios.get(`${API_BASE_URL}/api/quotes/vendor`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        axios.get("${API_BASE_URL}/api/orders/vendor", {
+        axios.get(`${API_BASE_URL}/api/orders/vendor`, {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);

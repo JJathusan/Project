@@ -20,7 +20,7 @@ export default function Marketplace() {
     const fetchMarketplace = async () => {
       try {
         setLoading(true);
-        const res = await axios.get("`${API_BASE_URL}/api/products/all");
+        const res = await axios.get(`${API_BASE_URL}/api/products/all`);
         setProducts(res.data || []);
       } catch (err) {
         console.error("Marketplace fetch error:", err);

@@ -19,7 +19,7 @@ export default function VendorShipments() {
     if (!token) return;
 
     try {
-      const res = await axios.get("${API_BASE_URL}/api/orders/vendor", {
+      const res = await axios.get(`${API_BASE_URL}/api/orders/vendor`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

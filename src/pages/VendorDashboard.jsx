@@ -14,7 +14,7 @@ export default function VendorDashboard() {
     const fetchStats = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("${API_BASE_URL}/api/vendors/stats", {
+        const res = await axios.get(`${API_BASE_URL}/api/vendors/stats`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -157,7 +157,7 @@ function RecentRFQs() {
       const token = localStorage.getItem("token");
       if (!token) return;
       try {
-        const res = await axios.get("${API_BASE_URL}/api/quotes/vendor", {
+        const res = await axios.get(`${API_BASE_URL}/api/quotes/vendor`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setRfqs(res.data.slice(0, 5));
